@@ -43,7 +43,8 @@ export default function Roles() {
     );
   }
 
-  const rolesCadets = cadets.filter(c => c.role && c.role.trim() !== '');
+  // Filter only cadets with role defined, not empty, and not 'צוער'
+  const rolesCadets = cadets.filter(c => c.role && c.role.trim() !== '' && c.role.trim() !== 'צוער');
 
   // Group by role in case multiple cadets share a role, but usually it's one-to-one
   const groupedRoles = rolesCadets.reduce((acc, cadet) => {
@@ -76,7 +77,7 @@ export default function Roles() {
           <p className="text-slate-500 font-medium text-lg">טרם הוגדרו תפקידי רוחב במערכת</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
           {sortedRoles.map(roleName => (
             <div 
               key={roleName} 
@@ -85,7 +86,7 @@ export default function Roles() {
               {/* Decorative top border */}
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-400 to-sky-400 rounded-t-2xl opacity-80 group-hover:opacity-100 transition-opacity"></div>
               
-              <div className="p-5 pt-6 flex flex-col h-full">
+              <div className="p-5 pt-6 flex flex-col">
                 {/* Role Badge */}
                 <div className="mb-4 inline-flex self-start items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg border border-indigo-100 font-bold">
                   <Briefcase size={16} className="text-indigo-500" />
