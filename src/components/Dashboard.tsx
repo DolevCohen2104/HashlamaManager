@@ -173,7 +173,7 @@ export default function Dashboard({ profile }: Props) {
     );
   };
 
-  // ─── Maham edit mode: full cadet list grouped by team ────────────────────────
+  // ─── Maham edit mode: full cadet list grouped by team ───────────────────────
   const renderMahamEdit = (eventId: string) => {
     const teams = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
