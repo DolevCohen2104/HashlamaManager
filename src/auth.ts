@@ -1,65 +1,61 @@
 import { supabase } from './supabase';
-import type { User } from '@supabase/supabase-js';
 
-// We map personal_id to a dummy email for Supabase Auth
-const getEmailFromPersonalId = (personalId: string) => `${personalId}@app.idf.il`;
+export interface AppUser {
+  personal_id: string;
+  role: 'maham' | 'mammash' | 'rohav';
+  full_name: string;
+  team_number: string | null;
+}
 
 export const initAuth = (
-  onAuthSuccess?: (user: User) => void,
+  onAuthSuccess?: (user: AppUser) => void,
   onAuthFailure?: () => void
 ) => {
-  // Check initial session
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session?.user) {
-      if (onAuthSuccess) onAuthSuccess(session.user);
-    } else {
+  const stored = localStorage.getItem('hashlama_user');
+  if (stored) {
+    try {
+      const user = JSON.parse(stored) as AppUser;
+      if (onAuthSuccess) onAuthSuccess(user);
+    } catch (e) {
       if (onAuthFailure) onAuthFailure();
     }
-  });
-
-  // Listen for auth changes
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-    if (session?.user) {
-      if (onAuthSuccess) onAuthSuccess(session.user);
-    } else {
-      if (onAuthFailure) onAuthFailure();
-    }
-  });
-
-  return () => {
-    subscription.unsubscribe();
-  };
-};
-
-export const signInWithPersonalId = async (personalId: string): Promise<User | null> => {
-  const email = getEmailFromPersonalId(personalId);
-  // Using a universal dummy password since the system relies only on personal ID for ease of use
-  const universalPassword = 'HashlamaPassword123!';
-
-  let { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password: universalPassword,
-  });
-
-  // If login fails because user doesn't exist, we can optionally auto-signup here
-  // But since public.users needs the auth.uid, we'll let the user handle creation
-  if (error) {
-    if (error.message.includes('Invalid login credentials')) {
-       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password: universalPassword,
-      });
-      if (!signUpError && signUpData.user) {
-        return signUpData.user;
-      }
-    }
-    console.error('Sign in error:', error);
-    throw new Error('שגיאה בהתחברות: מספר אישי לא מזוהה במערכת');
+  } else {
+    if (onAuthFailure) onAuthFailure();
   }
 
-  return data.user;
+  return () => {};
+};
+
+export const signInWithPersonalId = async (personalId: string): Promise<AppUser | null> => {
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('personal_id, role')
+    .eq('personal_id', personalId)
+    .single();
+
+  if (userError || !userData) {
+    console.error('Sign in error:', userError);
+    throw new Error('שגיאה בהתחברות: מספר אישי לא מזוהה במערכת מורשי הגישה');
+  }
+
+  const { data: cadetData } = await supabase
+    .from('cadets')
+    .select('full_name, team_number')
+    .eq('personal_id', personalId)
+    .single();
+
+  const user: AppUser = {
+    personal_id: userData.personal_id,
+    role: userData.role,
+    full_name: cadetData?.full_name || 'משתמש מערכת',
+    team_number: cadetData?.team_number?.toString() || null,
+  };
+
+  localStorage.setItem('hashlama_user', JSON.stringify(user));
+  return user;
 };
 
 export const logout = async () => {
-  await supabase.auth.signOut();
+  localStorage.removeItem('hashlama_user');
+  window.location.reload();
 };

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, LayoutDashboard, Users, Download, LogOut, CheckCircle2 } from 'lucide-react';
-import { initAuth, logout } from './auth';
-import { User } from '@supabase/supabase-js';
-import type { UserProfile, Role } from './types';
-import { getUserProfile, createUserProfile } from './services/db';
+import { initAuth, logout, AppUser } from './auth';
 
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
@@ -11,8 +8,7 @@ import CadetDirectory from './components/CadetDirectory';
 import ExportData from './components/ExportData';
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<AppUser | null>(null);
   const [needsAuth, setNeedsAuth] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -20,42 +16,12 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = initAuth(
-      async (user) => {
-        setCurrentUser(user);
-        
-        try {
-          // Fetch or create profile
-          let p = await getUserProfile(user.id);
-          if (!p) {
-            // Bootstrap a default profile for the user
-            p = {
-              id: user.id,
-              personal_id: user.email?.split('@')[0] || Math.floor(1000000 + Math.random() * 9000000).toString(),
-              full_name: user.user_metadata?.full_name || 'משתמש מנהל',
-              role: 'maham', // Bootstrap as maham for full access test
-              team_number: '1'
-            };
-            await createUserProfile(user.id, p);
-          }
-          setProfile(p);
-          setNeedsAuth(false);
-        } catch (err: any) {
-          console.error("Failed to load profile:", err);
-          // If supabase is inaccessible, create a local mock profile
-          setProfile({
-            id: user.id,
-            personal_id: '1234567',
-            full_name: 'משתמש מקומי',
-            role: 'maham',
-            team_number: '1'
-          });
-          setNeedsAuth(false);
-        } finally {
-          setIsLoading(false);
-        }
+      (user) => {
+        setProfile(user);
+        setNeedsAuth(false);
+        setIsLoading(false);
       },
       () => {
-        setCurrentUser(null);
         setProfile(null);
         setNeedsAuth(true);
         setIsLoading(false);
