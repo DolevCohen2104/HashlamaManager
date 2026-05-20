@@ -23,7 +23,6 @@ export interface AttendanceLog {
   absence_reason: string;
   notes: string;
   updated_at: string;
-  updated_by: string;
 }
 
 export interface CalendarEvent {
