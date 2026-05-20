@@ -73,12 +73,13 @@ export default function Dashboard({ profile }: Props) {
     // Group cadets by team
     const teams = ['1', '2', '3', '4', '5', '6', '7', '8'];
     return (
-      <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-        <h4 className="font-medium text-slate-800 mb-3 flex items-center gap-2">
-          <Users size={16} className="text-blue-500" />
-          סיכום נוכחות צוותי
+    return (
+      <div className="w-full">
+        <h4 className="font-medium text-slate-800 mb-4 flex items-center gap-2 text-lg border-b border-slate-100 pb-2">
+          <Users size={20} className="text-blue-500" />
+          סיכום נוכחות כללי לפי צוותים
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {teams.map(team => {
             const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
             if (teamCadets.length === 0) return null;
@@ -326,19 +327,43 @@ export default function Dashboard({ profile }: Props) {
                 {!isCadet && (
                   <div className="flex items-center gap-1 text-sky-600 bg-sky-50 px-2 py-1 rounded">
                     <span className="text-xs font-bold">
-                      {selectedEventId === event.id ? 'סגור נוכחות' : 'ניהול נוכחות'}
+                      {isMammash ? (selectedEventId === event.id ? 'סגור נוכחות' : 'ניהול נוכחות') : 'הצג מצבה'}
                     </span>
-                    {selectedEventId === event.id ? <ChevronDown size={14} /> : <ChevronLeft size={14} />}
+                    {isMammash && (selectedEventId === event.id ? <ChevronDown size={14} /> : <ChevronLeft size={14} />)}
                   </div>
                 )}
               </button>
               
-              {/* Expandable attendance area */}
-              <div className={`transition-all duration-300 ease-in-out px-4 overflow-hidden ${selectedEventId === event.id ? 'pb-4 opacity-100' : 'max-h-0 opacity-0'}`}>
-                {isMammash ? renderMammashList(event.id) : renderMahamSummary(event.id)}
-              </div>
+              {/* Expandable attendance area for Mammash */}
+              {isMammash && (
+                <div className={`transition-all duration-300 ease-in-out px-4 overflow-hidden ${selectedEventId === event.id ? 'pb-4 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  {renderMammashList(event.id)}
+                </div>
+              )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Maham Popup */}
+      {!isMammash && !isCadet && selectedEventId && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+              <h3 className="font-bold text-lg text-slate-800">
+                מצבת נוכחות - {events.find(e => e.id === selectedEventId)?.summary}
+              </h3>
+              <button 
+                onClick={() => setSelectedEventId(null)}
+                className="text-slate-400 hover:bg-slate-200 hover:text-slate-700 rounded-lg transition-colors p-1"
+              >
+                <XCircle size={28} />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto" dir="rtl">
+              {renderMahamSummary(selectedEventId)}
+            </div>
+          </div>
         </div>
       )}
     </div>
