@@ -6,29 +6,7 @@ const handleSupabaseError = (error: any, context: string) => {
   throw new Error(`שגיאה בפעולת מסד נתונים: ${error.message}`);
 };
 
-// User Profile
-export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', uid)
-    .single();
-
-  if (error && error.code !== 'PGRST116') { // PGRST116 is "No rows found"
-    handleSupabaseError(error, 'getUserProfile');
-  }
-  
-  if (!data) return null;
-  return data as UserProfile;
-};
-
-export const createUserProfile = async (uid: string, profile: Omit<UserProfile, 'id'>) => {
-  const { error } = await supabase
-    .from('users')
-    .insert({ id: uid, ...profile });
-
-  if (error) handleSupabaseError(error, 'createUserProfile');
-};
+// Users table was removed, auth is handled in auth.ts
 
 // Cadets
 export const fetchCadets = async (): Promise<Cadet[]> => {
@@ -45,7 +23,7 @@ export const fetchCadets = async (): Promise<Cadet[]> => {
   return data as Cadet[];
 };
 
-export const addCadet = async (cadet: Omit<Cadet, 'id'>) => {
+export const addCadet = async (cadet: Omit<Cadet, 'cadet_id'>) => {
   const { error } = await supabase
     .from('cadets')
     .insert(cadet);
@@ -57,7 +35,7 @@ export const deleteCadet = async (id: string) => {
   const { error } = await supabase
     .from('cadets')
     .delete()
-    .eq('id', id);
+    .eq('cadet_id', id);
 
   if (error) handleSupabaseError(error, 'deleteCadet');
 };
@@ -76,12 +54,12 @@ export const fetchAttendanceForEvent = async (eventId: string): Promise<Attendan
   return data as AttendanceLog[];
 };
 
-export const upsertAttendance = async (log: Omit<AttendanceLog, 'id'>, existingId?: string) => {
+export const upsertAttendance = async (log: Omit<AttendanceLog, 'log_id'>, existingId?: string) => {
   if (existingId) {
     const { error } = await supabase
       .from('attendance_logs')
       .update({ ...log, updated_at: new Date().toISOString() })
-      .eq('id', existingId);
+      .eq('log_id', existingId);
     if (error) handleSupabaseError(error, 'upsertAttendance (update)');
   } else {
     const { error } = await supabase

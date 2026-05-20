@@ -13,7 +13,7 @@ const COLUMNS = [
   { id: 'team_number', label: 'צוות' },
   { id: 'phone_number', label: 'טלפון' },
   { id: 'birth_date', label: 'תאריך לידה' },
-  { id: 'specific_role', label: 'תפקיד בהשלמה' }
+  { id: 'role', label: 'תפקיד בהשלמה' }
 ] as const;
 
 export default function ExportData({ profile }: Props) {
@@ -89,7 +89,7 @@ export default function ExportData({ profile }: Props) {
     document.body.removeChild(link);
   };
 
-  if (profile.role !== 'maham' && profile.role !== 'rohav') {
+  if (profile.role === 'צוער' || profile.role === 'ממ"ש') {
     return null;
   }
 

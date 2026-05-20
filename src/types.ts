@@ -6,7 +6,7 @@ export interface UserProfile {
 }
 
 export interface Cadet {
-  id: string;
+  cadet_id: string;
   full_name: string;
   personal_id: string;
   team_number: string;
@@ -16,7 +16,7 @@ export interface Cadet {
 }
 
 export interface AttendanceLog {
-  id: string;
+  log_id: string;
   event_id: string;
   cadet_id: string;
   status: boolean;

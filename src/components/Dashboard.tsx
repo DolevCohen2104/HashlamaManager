@@ -81,7 +81,7 @@ export default function Dashboard({ profile }: Props) {
             const teamCadets = cadets.filter(c => c.team_number === team);
             if (teamCadets.length === 0) return null;
             
-            const teamLogs = attendance.filter(log => teamCadets.some(c => c.id === log.cadet_id));
+            const teamLogs = attendance.filter(log => teamCadets.some(c => c.cadet_id === log.cadet_id));
             const presentCount = teamLogs.filter(log => log.status === true).length;
             const absentCount = teamLogs.filter(log => log.status === false).length;
             // Assuming unmarked means present by default? No, unmarked means unknown. Let's assume present.
@@ -100,9 +100,9 @@ export default function Dashboard({ profile }: Props) {
                     <span className="text-red-500 font-medium">{absentCount} נעדרים:</span>
                     <ul className="mt-1 space-y-1">
                       {teamLogs.filter(log => log.status === false).map(log => {
-                        const cadet = teamCadets.find(c => c.id === log.cadet_id);
+                        const cadet = teamCadets.find(c => c.cadet_id === log.cadet_id);
                         return (
-                          <li key={log.id} className="text-slate-600 truncate">
+                          <li key={log.log_id} className="text-slate-600 truncate">
                             {cadet?.full_name} - {log.absence_reason || 'ללא סיבה'}
                           </li>
                         );
@@ -132,37 +132,37 @@ export default function Dashboard({ profile }: Props) {
             <p className="text-sm text-slate-500">אין צוערים רשומים לצוות זה. הוסף צוערים בספר השלמה.</p>
           ) : (
             relevantCadets.map(cadet => {
-              const log = attendance.find(a => a.cadet_id === cadet.id);
+              const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
               const isPresent = log ? log.status : true; // Default to present visually if no log
               
               const handleToggle = async (status: boolean) => {
                 const newLog = {
                   event_id: eventId,
-                  cadet_id: cadet.id,
+                  cadet_id: cadet.cadet_id,
                   status,
                   absence_reason: status ? '' : 'לוז חיצוני', // default reason
                   notes: '',
                   updated_by: profile.id,
                   updated_at: new Date().toISOString()
                 };
-                await upsertAttendance(newLog, log?.id);
+                await upsertAttendance(newLog, log?.log_id);
                 // Optimistic update
                 const existing = [...attendance];
-                const idx = existing.findIndex(a => a.cadet_id === cadet.id);
-                if (idx > -1) existing[idx] = { ...newLog, id: log!.id, updated_at: new Date().toISOString() };
-                else existing.push({ ...newLog, id: Math.random().toString(), updated_at: new Date().toISOString() });
+                const idx = existing.findIndex(a => a.cadet_id === cadet.cadet_id);
+                if (idx > -1) existing[idx] = { ...newLog, log_id: log!.log_id, updated_at: new Date().toISOString() };
+                else existing.push({ ...newLog, log_id: Math.random().toString(), updated_at: new Date().toISOString() });
                 setAttendance(existing);
               };
 
               const handleReasonChange = async (reason: string) => {
                 if (!log) return;
-                await upsertAttendance({ ...log, absence_reason: reason }, log.id);
-                const updated = attendance.map(a => a.id === log.id ? { ...a, absence_reason: reason } : a);
+                await upsertAttendance({ ...log, absence_reason: reason }, log.log_id);
+                const updated = attendance.map(a => a.log_id === log.log_id ? { ...a, absence_reason: reason } : a);
                 setAttendance(updated);
               };
 
               return (
-                <div key={cadet.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm gap-3">
+                <div key={cadet.cadet_id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm gap-3">
                   <div className="font-medium text-slate-800">{cadet.full_name}</div>
                   
                   <div className="flex flex-wrap items-center gap-2">

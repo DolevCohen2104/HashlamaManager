@@ -40,7 +40,7 @@ export default function CadetDirectory({ profile }: Props) {
     e.preventDefault();
     if (!newCadet.full_name || !newCadet.personal_id || !newCadet.team_number) return;
     
-    await addCadet(newCadet as Omit<Cadet, 'id'>);
+    await addCadet(newCadet as Omit<Cadet, 'cadet_id'>);
     setIsAdding(false);
     setNewCadet({});
     loadCadets();
@@ -203,12 +203,12 @@ export default function CadetDirectory({ profile }: Props) {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                       {teamCadets.map(cadet => {
-                        const isCadetExpanded = expandedCadet === cadet.id;
+                        const isCadetExpanded = expandedCadet === cadet.cadet_id;
                         
                         return (
                           <div 
-                            key={cadet.id} 
-                            onClick={() => setExpandedCadet(isCadetExpanded ? null : cadet.id)}
+                            key={cadet.cadet_id} 
+                            onClick={() => setExpandedCadet(isCadetExpanded ? null : cadet.cadet_id)}
                             className={`border transition-all duration-200 rounded-lg bg-white overflow-hidden cursor-pointer ${
                               isCadetExpanded ? 'border-blue-300 ring-1 ring-blue-300 shadow-md col-span-1 md:col-span-2 lg:col-span-3' : 'border-slate-200 shadow-sm hover:border-slate-300 hover:shadow'
                             }`}
@@ -220,7 +220,7 @@ export default function CadetDirectory({ profile }: Props) {
                               </div>
                               <div className="flex items-center gap-2 text-slate-400">
                                 {isMaham && (
-                                  <button onClick={(e) => handleDelete(cadet.id, e)} className="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded">
+                                  <button onClick={(e) => handleDelete(cadet.cadet_id, e)} className="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded">
                                     <Trash2 size={16} />
                                   </button>
                                 )}
