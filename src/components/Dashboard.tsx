@@ -29,6 +29,19 @@ export default function Dashboard({ profile }: Props) {
       return next;
     });
 
+  // Listen for beforeunload to prevent data loss on refresh if there are pending saves
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const hasPendingSaves = Object.keys(debounceTimers.current).length > 0;
+      if (hasPendingSaves) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -43,6 +56,32 @@ export default function Dashboard({ profile }: Props) {
       setEvents(evts);
       setCadets(cdts);
       setError(null);
+
+      // Auto-open current event for Mammash / Maham
+      if (profile.role !== 'צוער' && evts.length > 0 && !selectedEventId) {
+        const now = new Date();
+        const currentEvent = evts.find(e => {
+          if (!e.start || !e.end) return false;
+          const start = new Date(e.start);
+          const end = new Date(e.end);
+          // Check if now is between start - 15 minutes and end
+          const startMinus15 = new Date(start.getTime() - 15 * 60000);
+          return now >= startMinus15 && now <= end;
+        });
+
+        if (currentEvent) {
+          setSelectedEventId(currentEvent.id);
+          setAttendanceLoading(true);
+          try {
+            const logs = await fetchAttendanceForEvent(currentEvent.id);
+            setAttendance(logs);
+          } catch (err) {
+            console.error(err);
+          } finally {
+            setAttendanceLoading(false);
+          }
+        }
+      }
     } catch (err: any) {
       console.error(err);
       if (err.message === 'MISSING_CONFIG') {
@@ -210,15 +249,19 @@ export default function Dashboard({ profile }: Props) {
       debounceTimers.current[cadetId] = setTimeout(async () => {
         const log = attendance.find(a => a.cadet_id === cadetId);
         if (log) await upsertAttendance({ ...log, absence_reason: reason });
+        delete debounceTimers.current[cadetId]; // clear timer when done
       }, 600);
     };
 
     const handleReasonBlur = async (cadetId: string, reason: string) => {
-      // On blur: cancel debounce and save immediately
-      clearTimeout(debounceTimers.current[cadetId]);
-      const log = attendance.find(a => a.cadet_id === cadetId);
-      if (!log) return;
-      await upsertAttendance({ ...log, absence_reason: reason });
+      // On blur: cancel debounce and save immediately if there was one pending
+      if (debounceTimers.current[cadetId]) {
+        clearTimeout(debounceTimers.current[cadetId]);
+        delete debounceTimers.current[cadetId];
+        const log = attendance.find(a => a.cadet_id === cadetId);
+        if (!log) return;
+        await upsertAttendance({ ...log, absence_reason: reason });
+      }
     };
 
     const markTeamAllPresent = async (teamCadets: Cadet[]) => {
@@ -434,14 +477,18 @@ export default function Dashboard({ profile }: Props) {
                 debounceTimers.current[cadet.cadet_id] = setTimeout(async () => {
                   const currentLog = attendance.find(a => a.cadet_id === cadet.cadet_id);
                   if (currentLog) await upsertAttendance({ ...currentLog, absence_reason: reason });
+                  delete debounceTimers.current[cadet.cadet_id]; // clear timer when done
                 }, 600);
               };
 
               const handleReasonBlur = async (reason: string) => {
-                clearTimeout(debounceTimers.current[cadet.cadet_id]);
-                const currentLog = attendance.find(a => a.cadet_id === cadet.cadet_id);
-                if (!currentLog) return;
-                await upsertAttendance({ ...currentLog, absence_reason: reason });
+                if (debounceTimers.current[cadet.cadet_id]) {
+                  clearTimeout(debounceTimers.current[cadet.cadet_id]);
+                  delete debounceTimers.current[cadet.cadet_id];
+                  const currentLog = attendance.find(a => a.cadet_id === cadet.cadet_id);
+                  if (!currentLog) return;
+                  await upsertAttendance({ ...currentLog, absence_reason: reason });
+                }
               };
 
               return (
