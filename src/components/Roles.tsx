@@ -43,8 +43,7 @@ export default function Roles() {
     );
   }
 
-  // Filter only cadets with role defined and not empty
-  const rolesCadets = cadets.filter(c => c.role && c.specific_role.trim() !== '');
+  const rolesCadets = cadets.filter(c => c.specific_role && c.specific_role.trim() !== '');
 
   // Group by role in case multiple cadets share a role, but usually it's one-to-one
   const groupedRoles = rolesCadets.reduce((acc, cadet) => {
