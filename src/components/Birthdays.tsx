@@ -70,8 +70,9 @@ export default function Birthdays() {
     return acc;
   }, {} as Record<number, { cadet: Cadet, date: Date, day: number }[]>);
 
-  // Sort months and days
   const currentMonth = new Date().getMonth();
+  // Create an array of month indices starting from current month (e.g., if May=4, then [4,5,6...11,0,1,2,3])
+  const orderedMonthIndices = Array.from({ length: 12 }, (_, i) => (currentMonth + i) % 12);
 
   return (
     <div className="flex flex-col h-full max-w-5xl mx-auto w-full pb-20 md:pb-0">
@@ -87,10 +88,11 @@ export default function Birthdays() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {HEBREW_MONTHS.map((monthName, index) => {
-          const monthData = groupedBirthdays[index];
-          const isCurrentMonth = index === currentMonth;
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start">
+        {orderedMonthIndices.map((monthIndex) => {
+          const monthName = HEBREW_MONTHS[monthIndex];
+          const monthData = groupedBirthdays[monthIndex];
+          const isCurrentMonth = monthIndex === currentMonth;
 
           if (!monthData || monthData.length === 0) return null;
 
