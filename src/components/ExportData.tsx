@@ -47,7 +47,7 @@ export default function ExportData({ profile }: Props) {
   const handleExport = () => {
     const filteredCadets = selectedTeam === 'all' 
       ? cadets 
-      : cadets.filter(c => c.team_number === selectedTeam);
+      : cadets.filter(c => c.team_number?.toString() === selectedTeam);
 
     if (filteredCadets.length === 0) {
       alert('אין נתונים לייצוא');

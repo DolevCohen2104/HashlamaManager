@@ -60,7 +60,7 @@ export default function Dashboard({ profile }: Props) {
 
   const isMammash = profile.role === 'ממ"ש';
   const relevantCadets = isMammash 
-    ? cadets.filter(c => c.team_number === profile.team_number)
+    ? cadets.filter(c => c.team_number?.toString() === profile.team_number?.toString())
     : cadets;
 
   const totalRelevantCadets = relevantCadets.length;
@@ -78,7 +78,7 @@ export default function Dashboard({ profile }: Props) {
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {teams.map(team => {
-            const teamCadets = cadets.filter(c => c.team_number === team);
+            const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
             if (teamCadets.length === 0) return null;
             
             const teamLogs = attendance.filter(log => teamCadets.some(c => c.cadet_id === log.cadet_id));

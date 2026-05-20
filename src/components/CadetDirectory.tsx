@@ -165,7 +165,7 @@ export default function CadetDirectory({ profile }: Props) {
 
       <div className="space-y-4">
         {visibleTeams.map(team => {
-          const teamCadets = cadets.filter(c => c.team_number === team);
+          const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
           if (teamCadets.length === 0 && !isMaham) return null; // Only maham sees empty teams
           
           const isExpanded = expandedTeam === team || isMammash; // Mammash team is always expanded
