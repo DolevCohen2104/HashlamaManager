@@ -16,6 +16,7 @@ export default function Dashboard({ profile }: Props) {
   
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [attendance, setAttendance] = useState<AttendanceLog[]>([]);
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -46,14 +47,19 @@ export default function Dashboard({ profile }: Props) {
   const loadEventAttendance = async (eventId: string) => {
     if (selectedEventId === eventId) {
       setSelectedEventId(null);
+      setAttendance([]);
       return;
     }
     setSelectedEventId(eventId);
+    setAttendance([]); // clear stale data immediately
+    setAttendanceLoading(true);
     try {
       const logs = await fetchAttendanceForEvent(eventId);
       setAttendance(logs);
     } catch (err) {
       console.error(err);
+    } finally {
+      setAttendanceLoading(false);
     }
   };
 
@@ -69,36 +75,78 @@ export default function Dashboard({ profile }: Props) {
   const renderMahamSummary = (eventId: string) => {
     if (selectedEventId !== eventId) return null;
     const teams = ['1', '2', '3', '4', '5', '6', '7', '8'];
+
+    // Total across all teams
+    const allLogs = attendance;
+    const totalPresent = allLogs.filter(log => log.status === true || log.status as any === 't').length;
+    const totalCadets = cadets.length;
+    const totalAbsent = allLogs.filter(log => log.status === false || log.status as any === 'f').length;
+
+    if (attendanceLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-10 gap-3 text-slate-400">
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span>טוען נתוני נוכחות...</span>
+        </div>
+      );
+    }
+
     return (
       <div className="w-full">
-        <h4 className="font-medium text-slate-800 mb-4 flex items-center gap-2 text-lg border-b border-slate-100 pb-2">
-          <Users size={20} className="text-blue-500" />
-          סיכום נוכחות כללי לפי צוותים
-        </h4>
+        {/* Grand total banner */}
+        <div className="mb-5 p-4 rounded-xl flex items-center justify-between bg-slate-900 text-white">
+          <div className="flex items-center gap-2">
+            <Users size={20} className="text-sky-400" />
+            <span className="font-semibold text-lg">סה"כ מצבה</span>
+          </div>
+          <div className="flex items-center gap-4 text-lg font-bold">
+            <span className="text-emerald-400">{totalPresent} נוכחים</span>
+            <span className="text-slate-500">|</span>
+            <span className="text-red-400">{totalAbsent} נעדרים</span>
+            <span className="text-slate-500">|</span>
+            <span className="text-slate-300">{totalCadets} בסה"כ</span>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {teams.map(team => {
             const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
             if (teamCadets.length === 0) return null;
             const teamLogs = attendance.filter(log => teamCadets.some(c => c.cadet_id === log.cadet_id));
-            const presentCount = teamLogs.filter(log => log.status === true).length;
-            const absentCount = teamLogs.filter(log => log.status === false).length;
+            // Normalize boolean (Supabase can return 't'/'f' or true/false)
+            const presentCount = teamLogs.filter(log => log.status === true || log.status as any === 't').length;
+            const absentLogs = teamLogs.filter(log => log.status === false || log.status as any === 'f');
+            const absentCount = absentLogs.length;
+            const unmarkedCount = teamCadets.length - teamLogs.length;
             return (
-              <div key={team} className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+              <div key={team} className={`p-4 rounded-xl border-2 shadow-sm ${
+                absentCount > 0 ? 'border-red-200 bg-red-50' :
+                presentCount === teamCadets.length ? 'border-emerald-200 bg-emerald-50' :
+                'border-slate-200 bg-white'
+              }`}>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold text-slate-700">צוות {team}</span>
-                  <span className="text-sm font-medium bg-slate-100 px-2 py-0.5 rounded text-slate-600">
-                    {presentCount}/{teamCadets.length} חתומים
+                  <span className="font-bold text-slate-700 text-base">צוות {team}</span>
+                  <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${
+                    presentCount === teamCadets.length ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {presentCount}/{teamCadets.length} נוכחים
                   </span>
                 </div>
+                {unmarkedCount > 0 && (
+                  <p className="text-xs text-amber-600 mb-1">{unmarkedCount} ללא דיווח</p>
+                )}
                 {absentCount > 0 && (
-                  <div className="mt-2 text-xs border-t border-slate-100 pt-2">
-                    <span className="text-red-500 font-medium">{absentCount} נעדרים:</span>
+                  <div className="mt-2 text-xs border-t border-red-100 pt-2">
+                    <span className="text-red-600 font-semibold">{absentCount} נעדרים:</span>
                     <ul className="mt-1 space-y-1">
-                      {teamLogs.filter(log => log.status === false).map(log => {
+                      {absentLogs.map(log => {
                         const cadet = teamCadets.find(c => c.cadet_id === log.cadet_id);
                         return (
-                          <li key={log.log_id} className="text-slate-600 truncate">
-                            {cadet?.full_name} - {log.absence_reason || 'ללא סיבה'}
+                          <li key={log.log_id} className="text-slate-700">
+                            <span className="font-medium">{cadet?.full_name}</span>
+                            {log.absence_reason && (
+                              <span className="text-slate-500"> – {log.absence_reason}</span>
+                            )}
                           </li>
                         );
                       })}
