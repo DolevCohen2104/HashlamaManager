@@ -19,6 +19,8 @@ export default function Dashboard({ profile }: Props) {
   const [attendanceLoading, setAttendanceLoading] = useState(false);
   const [mahamEditMode, setMahamEditMode] = useState(false);
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
+  // Debounce timers for absence reason auto-save
+  const debounceTimers = React.useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const toggleTeam = (team: string) =>
     setExpandedTeams(prev => {
@@ -203,9 +205,17 @@ export default function Dashboard({ profile }: Props) {
       setAttendance(prev =>
         prev.map(a => a.cadet_id === cadetId ? { ...a, absence_reason: reason } : a)
       );
+      // Auto-save with 600ms debounce
+      clearTimeout(debounceTimers.current[cadetId]);
+      debounceTimers.current[cadetId] = setTimeout(async () => {
+        const log = attendance.find(a => a.cadet_id === cadetId);
+        if (log) await upsertAttendance({ ...log, absence_reason: reason });
+      }, 600);
     };
 
     const handleReasonBlur = async (cadetId: string, reason: string) => {
+      // On blur: cancel debounce and save immediately
+      clearTimeout(debounceTimers.current[cadetId]);
       const log = attendance.find(a => a.cadet_id === cadetId);
       if (!log) return;
       await upsertAttendance({ ...log, absence_reason: reason });
@@ -415,14 +425,20 @@ export default function Dashboard({ profile }: Props) {
                 setAttendance(fresh);
               };
 
-              // Local-only reason change (saves on blur to avoid DB spam)
               const handleReasonChange = (reason: string) => {
                 setAttendance(prev =>
                   prev.map(a => a.cadet_id === cadet.cadet_id ? { ...a, absence_reason: reason } : a)
                 );
+                // Auto-save with 600ms debounce
+                clearTimeout(debounceTimers.current[cadet.cadet_id]);
+                debounceTimers.current[cadet.cadet_id] = setTimeout(async () => {
+                  const currentLog = attendance.find(a => a.cadet_id === cadet.cadet_id);
+                  if (currentLog) await upsertAttendance({ ...currentLog, absence_reason: reason });
+                }, 600);
               };
 
               const handleReasonBlur = async (reason: string) => {
+                clearTimeout(debounceTimers.current[cadet.cadet_id]);
                 const currentLog = attendance.find(a => a.cadet_id === cadet.cadet_id);
                 if (!currentLog) return;
                 await upsertAttendance({ ...currentLog, absence_reason: reason });
