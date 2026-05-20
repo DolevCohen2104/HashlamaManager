@@ -557,7 +557,7 @@ export default function Dashboard({ profile }: Props) {
                   )}
                 </div>
               );
-            }))}
+            })}
           </div>
           )}
         </div>
