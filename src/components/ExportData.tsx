@@ -89,7 +89,8 @@ export default function ExportData({ profile }: Props) {
     document.body.removeChild(link);
   };
 
-  if (profile.role === 'צוער' || profile.role === 'ממ"ש') {
+  // Only plain cadets (role === 'צוער') cannot access export
+  if (profile.role === 'צוער') {
     return null;
   }
 

@@ -16,10 +16,16 @@ export default function CadetDirectory({ profile }: Props) {
   const [isAdding, setIsAdding] = useState(false);
   const [newCadet, setNewCadet] = useState<Partial<Cadet>>({});
 
+  const isMaham = profile.role === 'מה"מ';
+  const isMammash = profile.role === 'ממ"ש';
+  // All users see all teams; mammash's own team is just highlighted
+  const visibleTeams = ['1', '2', '3', '4', '5', '6', '7', '8'];
+
   useEffect(() => {
     loadCadets();
-    if (profile.role === 'mammash') {
-      setExpandedTeam(profile.team_number);
+    // Auto-expand the mammash's own team
+    if (isMammash && profile.team_number) {
+      setExpandedTeam(profile.team_number?.toString());
     }
   }, [profile]);
 
@@ -29,13 +35,6 @@ export default function CadetDirectory({ profile }: Props) {
     setCadets(data);
     setLoading(false);
   };
-
-  const isMaham = profile.role === 'מה"מ';
-  const isMammash = profile.role === 'ממ"ש';
-  const isRohav = profile.role !== 'מה"מ' && profile.role !== 'ממ"ש' && profile.role !== 'צוער';
-
-  const visibleTeams = isMammash && profile.team_number ? [profile.team_number] : ['1', '2', '3', '4', '5', '6', '7', '8'];
-
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCadet.full_name || !newCadet.personal_id || !newCadet.team_number) return;
@@ -165,33 +164,39 @@ export default function CadetDirectory({ profile }: Props) {
 
       <div className="space-y-4">
         {visibleTeams.map(team => {
+          const isMammashOwnTeam = isMammash && team === profile.team_number?.toString();
           const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
-          if (teamCadets.length === 0 && !isMaham) return null; // Only maham sees empty teams
+          if (teamCadets.length === 0 && !isMaham) return null;
           
-          const isExpanded = expandedTeam === team || isMammash; // Mammash team is always expanded
+          const isExpanded = expandedTeam === team;
           
           return (
-            <div key={team} className="bg-white border text-right border-slate-200 rounded-xl overflow-hidden shadow-sm">
+            <div key={team} className={`border text-right rounded-xl overflow-hidden shadow-sm transition-all ${
+              isMammashOwnTeam
+                ? 'border-sky-400 bg-sky-50 ring-2 ring-sky-300'
+                : 'bg-white border-slate-200'
+            }`}>
               <button 
-                onClick={() => !isMammash && setExpandedTeam(isExpanded ? null : team)}
-                className={`w-full p-4 flex items-center justify-between transition-colors focus:outline-none ${
+                onClick={() => setExpandedTeam(isExpanded ? null : team)}
+                className={`w-full p-4 flex items-center justify-between transition-colors focus:outline-none cursor-pointer ${
                   isExpanded ? 'bg-slate-50 border-b border-slate-200' : 'hover:bg-slate-50'
-                } ${isMammash ? 'cursor-default' : 'cursor-pointer'}`}
+                }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center font-bold text-lg">
                     {team}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg text-slate-800">צוות {team}</h3>
+                    <h3 className={`font-semibold text-lg ${ isMammashOwnTeam ? 'text-sky-700' : 'text-slate-800' }`}>
+                      צוות {team}
+                      {isMammashOwnTeam && <span className="mr-2 text-xs font-bold bg-sky-200 text-sky-700 px-2 py-0.5 rounded-full">הצוות שלי</span>}
+                    </h3>
                     <p className="text-sm text-slate-500">{teamCadets.length} צוערים רשומים</p>
                   </div>
                 </div>
-                {!isMammash && (
-                  <div className="text-slate-400">
-                    {isExpanded ? <ChevronDown size={20} /> : <ChevronLeft size={20} />}
-                  </div>
-                )}
+                <div className="text-slate-400">
+                  {isExpanded ? <ChevronDown size={20} /> : <ChevronLeft size={20} />}
+                </div>
               </button>
               
               {isExpanded && (
@@ -220,10 +225,10 @@ export default function CadetDirectory({ profile }: Props) {
                               </div>
                               <div className="flex items-center gap-2 text-slate-400">
                                 {isMaham && (
-                                  <button onClick={(e) => handleDelete(cadet.cadet_id, e)} className="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded">
-                                    <Trash2 size={16} />
-                                  </button>
-                                )}
+                                <button onClick={(e) => handleDelete(cadet.cadet_id, e)} className="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded">
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
                                 {isCadetExpanded ? <ChevronDown size={18} /> : <ChevronLeft size={18} />}
                               </div>
                             </div>
