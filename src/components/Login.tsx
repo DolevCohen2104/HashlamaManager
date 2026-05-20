@@ -8,21 +8,20 @@ interface Props {
 
 export default function Login({ onLoginComplete }: Props) {
   const [personalId, setPersonalId] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!personalId || !password) {
-      setError('נא להזין מספר אישי וסיסמה');
+    if (!personalId) {
+      setError('נא להזין מספר אישי');
       return;
     }
     
     setIsLoggingIn(true);
     setError(null);
     try {
-      const user = await signInWithPersonalId(personalId, password);
+      const user = await signInWithPersonalId(personalId);
       if (user) {
         onLoginComplete();
       }
@@ -58,19 +57,6 @@ export default function Login({ onLoginComplete }: Props) {
                 required
               />
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">סיסמה</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="הזן סיסמה"
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-
             <button
               type="submit"
               disabled={isLoggingIn}

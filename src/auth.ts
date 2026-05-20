@@ -31,16 +31,30 @@ export const initAuth = (
   };
 };
 
-export const signInWithPersonalId = async (personalId: string, password: string): Promise<User | null> => {
+export const signInWithPersonalId = async (personalId: string): Promise<User | null> => {
   const email = getEmailFromPersonalId(personalId);
-  const { data, error } = await supabase.auth.signInWithPassword({
+  // Using a universal dummy password since the system relies only on personal ID for ease of use
+  const universalPassword = 'HashlamaPassword123!';
+
+  let { data, error } = await supabase.auth.signInWithPassword({
     email,
-    password,
+    password: universalPassword,
   });
 
+  // If login fails because user doesn't exist, we can optionally auto-signup here
+  // But since public.users needs the auth.uid, we'll let the user handle creation
   if (error) {
+    if (error.message.includes('Invalid login credentials')) {
+       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password: universalPassword,
+      });
+      if (!signUpError && signUpData.user) {
+        return signUpData.user;
+      }
+    }
     console.error('Sign in error:', error);
-    throw new Error('שגיאה בהתחברות: מספר אישי או סיסמה שגויים');
+    throw new Error('שגיאה בהתחברות: מספר אישי לא מזוהה במערכת');
   }
 
   return data.user;
