@@ -43,11 +43,11 @@ export default function Roles() {
     );
   }
 
-  const rolesCadets = cadets.filter(c => c.specific_role && c.specific_role.trim() !== '');
+  const rolesCadets = cadets.filter(c => c.role && c.role.trim() !== '');
 
   // Group by role in case multiple cadets share a role, but usually it's one-to-one
   const groupedRoles = rolesCadets.reduce((acc, cadet) => {
-    const role = cadet.specific_role!.trim();
+    const role = cadet.role!.trim();
     if (!acc[role]) acc[role] = [];
     acc[role].push(cadet);
     return acc;
