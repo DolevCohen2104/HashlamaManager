@@ -46,7 +46,10 @@ export default function App() {
   }
 
   if (needsAuth || !profile) {
-    return <Login onLoginComplete={() => setNeedsAuth(false)} />;
+    return <Login onLoginComplete={(user) => {
+      setProfile(user);
+      setNeedsAuth(false);
+    }} />;
   }
 
   return (
