@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft } from 'lucide-react';
 import type { UserProfile, CalendarEvent, Cadet, AttendanceLog } from '../types';
 import { fetchTodayEvents } from '../services/calendar';
 import { fetchCadets, fetchAttendanceForEvent, upsertAttendance } from '../services/db';
@@ -48,7 +48,6 @@ export default function Dashboard({ profile }: Props) {
       setSelectedEventId(null);
       return;
     }
-    
     setSelectedEventId(eventId);
     try {
       const logs = await fetchAttendanceForEvent(eventId);
@@ -69,8 +68,6 @@ export default function Dashboard({ profile }: Props) {
   
   const renderMahamSummary = (eventId: string) => {
     if (selectedEventId !== eventId) return null;
-    
-    // Group cadets by team
     const teams = ['1', '2', '3', '4', '5', '6', '7', '8'];
     return (
       <div className="w-full">
@@ -82,13 +79,9 @@ export default function Dashboard({ profile }: Props) {
           {teams.map(team => {
             const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
             if (teamCadets.length === 0) return null;
-            
             const teamLogs = attendance.filter(log => teamCadets.some(c => c.cadet_id === log.cadet_id));
             const presentCount = teamLogs.filter(log => log.status === true).length;
             const absentCount = teamLogs.filter(log => log.status === false).length;
-            // Assuming unmarked means present by default? No, unmarked means unknown. Let's assume present.
-            // Wait, standard practice: unmarked is considered absent or unknown. The specific requirements didn't state this, but let's just count explicitly marked.
-            
             return (
               <div key={team} className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
                 <div className="flex justify-between items-center mb-2">
@@ -120,130 +113,161 @@ export default function Dashboard({ profile }: Props) {
     );
   };
 
+  // ─── Mammash mobile-friendly attendance list ───────────────────────────────
   const renderMammashList = (eventId: string) => {
     if (selectedEventId !== eventId) return null;
-    
+
+    const markAllPresent = async () => {
+      const now = new Date().toISOString();
+      // Optimistic UI update first
+      const newAttendance = relevantCadets.map(cadet => {
+        const existing = attendance.find(a => a.cadet_id === cadet.cadet_id);
+        return existing
+          ? { ...existing, status: true, absence_reason: '' }
+          : {
+              log_id: Math.random().toString(),
+              event_id: eventId,
+              cadet_id: cadet.cadet_id,
+              status: true,
+              absence_reason: '',
+              notes: '',
+              updated_by: profile.personal_id,
+              updated_at: now,
+            } as AttendanceLog;
+      });
+      setAttendance(newAttendance);
+
+      // Persist to DB in parallel
+      await Promise.all(
+        relevantCadets.map(cadet => {
+          const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
+          if (log && log.status === true) return Promise.resolve();
+          return upsertAttendance(
+            { event_id: eventId, cadet_id: cadet.cadet_id, status: true, absence_reason: '', notes: '', updated_by: profile.personal_id, updated_at: now },
+            log?.log_id
+          );
+        })
+      );
+      // Sync real log_ids from DB
+      const logs = await fetchAttendanceForEvent(eventId);
+      setAttendance(logs);
+    };
+
     return (
       <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="font-medium text-slate-800 flex items-center gap-2">
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-semibold text-slate-800 flex items-center gap-2">
             <CheckCircle size={16} className="text-emerald-500" />
-            סימון נוכחות צוותית - צוות {profile.team_number}
+            סימון נוכחות – צוות {profile.team_number}
           </h4>
           {relevantCadets.length > 0 && (
-            <button 
-              onClick={async () => {
-                // Optimistically set all to present in UI
-                const now = new Date().toISOString();
-                const newAttendance = [...attendance];
-                
-                const promises = relevantCadets.map(cadet => {
-                  const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
-                  if (log && log.status === true) return Promise.resolve();
-                  
-                  const newLog = {
-                    event_id: eventId,
-                    cadet_id: cadet.cadet_id,
-                    status: true,
-                    absence_reason: '',
-                    notes: '',
-                    updated_by: profile.personal_id,
-                    updated_at: now
-                  };
-                  
-                  // Update local stateoptimistically
-                  const idx = newAttendance.findIndex(a => a.cadet_id === cadet.cadet_id);
-                  if (idx > -1) newAttendance[idx] = { ...newLog, log_id: log!.log_id };
-                  else newAttendance.push({ ...newLog, log_id: Math.random().toString() });
-                  
-                  return upsertAttendance(newLog, log?.log_id);
-                });
-                
-                setAttendance(newAttendance);
-                await Promise.all(promises);
-                
-                // Refresh from DB to get real log_ids
-                const logs = await fetchAttendanceForEvent(eventId);
-                setAttendance(logs);
-              }}
-              className="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+            <button
+              onClick={markAllPresent}
+              className="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-all shadow-sm"
             >
               <CheckCircle size={14} />
-              אשר נוכחות לכולם
+              כולם נוכחים
             </button>
           )}
         </div>
-        <div className="space-y-3">
-          {relevantCadets.length === 0 ? (
-            <p className="text-sm text-slate-500">אין צוערים רשומים לצוות זה. הוסף צוערים בספר השלמה.</p>
-          ) : (
-            relevantCadets.map(cadet => {
+
+        {relevantCadets.length === 0 ? (
+          <p className="text-sm text-slate-500">אין צוערים רשומים לצוות זה.</p>
+        ) : (
+          <div className="space-y-2">
+            {relevantCadets.map(cadet => {
               const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
-              const isPresent = log ? log.status : true; // Default to present visually if no log
-              
-              const handleToggle = async (status: boolean) => {
+              const isPresent = log ? log.status : true;
+
+              const handleToggle = async (newStatus: boolean) => {
                 const newLog = {
                   event_id: eventId,
                   cadet_id: cadet.cadet_id,
-                  status,
-                  absence_reason: status ? '' : 'לוז חיצוני', // default reason
+                  status: newStatus,
+                  absence_reason: '',
                   notes: '',
                   updated_by: profile.personal_id,
-                  updated_at: new Date().toISOString()
+                  updated_at: new Date().toISOString(),
                 };
-                await upsertAttendance(newLog, log?.log_id);
                 // Optimistic update
                 const existing = [...attendance];
                 const idx = existing.findIndex(a => a.cadet_id === cadet.cadet_id);
-                if (idx > -1) existing[idx] = { ...newLog, log_id: log!.log_id, updated_at: new Date().toISOString() };
-                else existing.push({ ...newLog, log_id: Math.random().toString(), updated_at: new Date().toISOString() });
+                const tempId = log?.log_id ?? Math.random().toString();
+                if (idx > -1) existing[idx] = { ...newLog, log_id: tempId };
+                else existing.push({ ...newLog, log_id: tempId });
                 setAttendance(existing);
+                await upsertAttendance(newLog, log?.log_id);
               };
 
-              const handleReasonChange = async (reason: string) => {
-                if (!log) return;
-                await upsertAttendance({ ...log, absence_reason: reason }, log.log_id);
-                const updated = attendance.map(a => a.log_id === log.log_id ? { ...a, absence_reason: reason } : a);
-                setAttendance(updated);
+              // Local-only reason change (saves on blur to avoid DB spam)
+              const handleReasonChange = (reason: string) => {
+                setAttendance(prev =>
+                  prev.map(a => a.cadet_id === cadet.cadet_id ? { ...a, absence_reason: reason } : a)
+                );
+              };
+
+              const handleReasonBlur = async (reason: string) => {
+                const currentLog = attendance.find(a => a.cadet_id === cadet.cadet_id);
+                if (!currentLog) return;
+                await upsertAttendance({ ...currentLog, absence_reason: reason }, currentLog.log_id);
               };
 
               return (
-                <div key={cadet.cadet_id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm gap-3">
-                  <div className="font-medium text-slate-800">{cadet.full_name}</div>
-                  
-                  <div className="flex flex-wrap items-center gap-2">
+                <div
+                  key={cadet.cadet_id}
+                  className={`rounded-xl border-2 overflow-hidden transition-colors duration-150 ${
+                    isPresent ? 'border-emerald-200 bg-white' : 'border-red-300 bg-red-50/60'
+                  }`}
+                >
+                  {/* Cadet row */}
+                  <div className="flex items-stretch" style={{ minHeight: '56px' }}>
+                    {/* Name */}
+                    <div className="flex-1 px-4 flex items-center">
+                      <span className="font-semibold text-slate-800 text-[15px] leading-tight">{cadet.full_name}</span>
+                    </div>
+                    {/* ✓ button – large touch target */}
                     <button
                       onClick={() => handleToggle(true)}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                        isPresent ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
+                      className={`w-16 flex items-center justify-center text-2xl font-bold border-r border-slate-100 transition-colors active:scale-95 ${
+                        isPresent
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-slate-100 text-slate-400 hover:bg-emerald-100 hover:text-emerald-600'
                       }`}
                     >
-                      נוכח/ת
+                      ✓
                     </button>
+                    {/* ✗ button – large touch target */}
                     <button
                       onClick={() => handleToggle(false)}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                        !isPresent ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
+                      className={`w-16 flex items-center justify-center text-2xl font-bold transition-colors active:scale-95 ${
+                        !isPresent
+                          ? 'bg-red-500 text-white'
+                          : 'bg-slate-100 text-slate-400 hover:bg-red-100 hover:text-red-600'
                       }`}
                     >
-                      נעדר/ת
+                      ✗
                     </button>
-                    
-                    {!isPresent && (
-                      <input 
-                        type="text"
-                        placeholder="סיבת היעדרות (חופשי)..."
-                        value={log?.absence_reason || ''}
-                        onChange={(e) => handleReasonChange(e.target.value)}
-                        className="text-sm bg-white border border-red-200 text-red-700 rounded-md py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-red-500 w-48 placeholder:text-red-300"
-                      />
-                    )}
                   </div>
+
+                  {/* Absence reason – full width, appears below name */}
+                  {!isPresent && (
+                    <div className="px-4 pb-3 pt-2 border-t border-red-200">
+                      <input
+                        type="text"
+                        placeholder="סיבת היעדרות..."
+                        value={log?.absence_reason || ''}
+                        onChange={e => handleReasonChange(e.target.value)}
+                        onBlur={e => handleReasonBlur(e.target.value)}
+                        className="w-full text-sm bg-white border border-red-200 text-red-700 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-red-400 placeholder:text-red-300"
+                      />
+                    </div>
+                  )}
                 </div>
               );
-            })
-          )}
-        </div>
+            })}
+          </div>
+        )}
       </div>
     );
   };
@@ -350,7 +374,7 @@ export default function Dashboard({ profile }: Props) {
           <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
               <h3 className="font-bold text-lg text-slate-800">
-                מצבת נוכחות - {events.find(e => e.id === selectedEventId)?.summary}
+                מצבת נוכחות – {events.find(e => e.id === selectedEventId)?.summary}
               </h3>
               <button 
                 onClick={() => setSelectedEventId(null)}
