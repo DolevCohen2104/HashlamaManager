@@ -73,7 +73,6 @@ export default function Dashboard({ profile }: Props) {
     // Group cadets by team
     const teams = ['1', '2', '3', '4', '5', '6', '7', '8'];
     return (
-    return (
       <div className="w-full">
         <h4 className="font-medium text-slate-800 mb-4 flex items-center gap-2 text-lg border-b border-slate-100 pb-2">
           <Users size={20} className="text-blue-500" />
