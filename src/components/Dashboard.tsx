@@ -209,14 +209,14 @@ export default function Dashboard({ profile }: Props) {
         const next = [...prev];
         teamCadets.forEach(cadet => {
           const idx = next.findIndex(a => a.cadet_id === cadet.cadet_id);
-          const newLog = { event_id: eventId, cadet_id: cadet.cadet_id, status: true, absence_reason: '', notes: '' updated_at: now, log_id: next[idx]?.log_id ?? Math.random().toString() };
+          const newLog = { event_id: eventId, cadet_id: cadet.cadet_id, status: true, absence_reason: '', notes: '', updated_at: now, log_id: next[idx]?.log_id ?? Math.random().toString() };
           if (idx > -1) next[idx] = newLog;
           else next.push(newLog);
         });
         return next;
       });
       await Promise.all(teamCadets.map(cadet =>
-        upsertAttendance({ event_id: eventId, cadet_id: cadet.cadet_id, status: true, absence_reason: '', notes: '' updated_at: now })
+        upsertAttendance({ event_id: eventId, cadet_id: cadet.cadet_id, status: true, absence_reason: '', notes: '', updated_at: now })
       ));
       const fresh = await fetchAttendanceForEvent(eventId);
       setAttendance(fresh);
@@ -319,7 +319,7 @@ export default function Dashboard({ profile }: Props) {
           const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
           if (log && log.status === true) return Promise.resolve();
           return upsertAttendance(
-            { event_id: eventId, cadet_id: cadet.cadet_id, status: true, absence_reason: '', notes: '' updated_at: now },
+            { event_id: eventId, cadet_id: cadet.cadet_id, status: true, absence_reason: '', notes: '', updated_at: now },
             log?.log_id
           );
         })
