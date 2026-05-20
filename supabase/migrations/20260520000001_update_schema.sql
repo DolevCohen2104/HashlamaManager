@@ -1,3 +1,6 @@
+-- First drop the policy that depends on the column
+DROP POLICY IF EXISTS "Mammash can manage own team attendance" ON public.attendance_logs;
+
 -- Remove old fields from users
 ALTER TABLE public.users DROP COLUMN IF EXISTS full_name;
 ALTER TABLE public.users DROP COLUMN IF EXISTS team_number;
@@ -6,8 +9,6 @@ ALTER TABLE public.users DROP COLUMN IF EXISTS team_number;
 ALTER TABLE public.cadets ALTER COLUMN team_number DROP NOT NULL;
 
 -- Recreate Mammash policy
-DROP POLICY IF EXISTS "Mammash can manage own team attendance" ON public.attendance_logs;
-
 CREATE POLICY "Mammash can manage own team attendance" ON public.attendance_logs FOR ALL USING (
   EXISTS (
     SELECT 1 FROM public.users u 
