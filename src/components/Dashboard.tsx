@@ -226,7 +226,9 @@ export default function Dashboard({ profile }: Props) {
           <div className="space-y-2">
             {relevantCadets.map(cadet => {
               const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
-              const isPresent = log ? log.status : true;
+              // 3 states: undefined = not marked (grey), true = present (green), false = absent (red)
+              const marked = log !== undefined;
+              const isPresent = log?.status; // undefined | true | false
 
               const handleToggle = async (newStatus: boolean) => {
                 const newLog = {
@@ -245,7 +247,10 @@ export default function Dashboard({ profile }: Props) {
                 if (idx > -1) existing[idx] = { ...newLog, log_id: tempId };
                 else existing.push({ ...newLog, log_id: tempId });
                 setAttendance(existing);
-                await upsertAttendance(newLog, log?.log_id);
+                // Persist + sync real log_id from DB
+                await upsertAttendance(newLog);
+                const fresh = await fetchAttendanceForEvent(eventId);
+                setAttendance(fresh);
               };
 
               // Local-only reason change (saves on blur to avoid DB spam)
@@ -258,14 +263,18 @@ export default function Dashboard({ profile }: Props) {
               const handleReasonBlur = async (reason: string) => {
                 const currentLog = attendance.find(a => a.cadet_id === cadet.cadet_id);
                 if (!currentLog) return;
-                await upsertAttendance({ ...currentLog, absence_reason: reason }, currentLog.log_id);
+                await upsertAttendance({ ...currentLog, absence_reason: reason });
               };
 
               return (
                 <div
                   key={cadet.cadet_id}
-                  className={`rounded-xl border-2 overflow-hidden transition-colors duration-150 ${
-                    isPresent ? 'border-emerald-200 bg-white' : 'border-red-300 bg-red-50/60'
+                className={`rounded-xl border-2 overflow-hidden transition-colors duration-150 ${
+                    !marked
+                      ? 'border-slate-200 bg-white'
+                      : isPresent
+                        ? 'border-emerald-300 bg-emerald-50'
+                        : 'border-red-300 bg-red-50/60'
                   }`}
                 >
                   {/* Cadet row */}
@@ -278,7 +287,7 @@ export default function Dashboard({ profile }: Props) {
                     <button
                       onClick={() => handleToggle(true)}
                       className={`w-16 flex items-center justify-center text-2xl font-bold border-r border-slate-100 transition-colors active:scale-95 ${
-                        isPresent
+                        isPresent === true
                           ? 'bg-emerald-500 text-white'
                           : 'bg-slate-100 text-slate-400 hover:bg-emerald-100 hover:text-emerald-600'
                       }`}
@@ -289,7 +298,7 @@ export default function Dashboard({ profile }: Props) {
                     <button
                       onClick={() => handleToggle(false)}
                       className={`w-16 flex items-center justify-center text-2xl font-bold transition-colors active:scale-95 ${
-                        !isPresent
+                        isPresent === false
                           ? 'bg-red-500 text-white'
                           : 'bg-slate-100 text-slate-400 hover:bg-red-100 hover:text-red-600'
                       }`}
@@ -299,7 +308,7 @@ export default function Dashboard({ profile }: Props) {
                   </div>
 
                   {/* Absence reason – full width, appears below name */}
-                  {!isPresent && (
+                  {isPresent === false && (
                     <div className="px-4 pb-3 pt-2 border-t border-red-200">
                       <input
                         type="text"

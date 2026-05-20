@@ -54,17 +54,15 @@ export const fetchAttendanceForEvent = async (eventId: string): Promise<Attendan
   return data as AttendanceLog[];
 };
 
-export const upsertAttendance = async (log: Omit<AttendanceLog, 'log_id'>, existingId?: string) => {
-  if (existingId) {
-    const { error } = await supabase
-      .from('attendance_logs')
-      .update({ ...log, updated_at: new Date().toISOString() })
-      .eq('log_id', existingId);
-    if (error) handleSupabaseError(error, 'upsertAttendance (update)');
-  } else {
-    const { error } = await supabase
-      .from('attendance_logs')
-      .insert({ ...log, updated_at: new Date().toISOString() });
-    if (error) handleSupabaseError(error, 'upsertAttendance (insert)');
-  }
+export const upsertAttendance = async (log: Omit<AttendanceLog, 'log_id'>, _existingId?: string) => {
+  // Use Supabase native upsert with onConflict so it always works,
+  // even if we only have a temp log_id in local state.
+  const { error } = await supabase
+    .from('attendance_logs')
+    .upsert(
+      { ...log, updated_at: new Date().toISOString() },
+      { onConflict: 'event_id,cadet_id' }
+    );
+  if (error) handleSupabaseError(error, 'upsertAttendance');
 };
+
