@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { fetchCadets } from '../services/db';
 import type { Cadet } from '../types';
-import { Network, Loader2, AlertCircle, Briefcase, Users, Star } from 'lucide-react';
+import { Network, Loader2, AlertCircle, Briefcase, Users, Star, Search, MessageCircle } from 'lucide-react';
+import { getWhatsAppLink } from '../utils';
 
 export default function Roles() {
   const [cadets, setCadets] = useState<Cadet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadData();
@@ -44,7 +46,15 @@ export default function Roles() {
   }
 
   // Filter only cadets with role defined, not empty, and not 'צוער'
-  const rolesCadets = cadets.filter(c => c.role && c.role.trim() !== '' && c.role.trim() !== 'צוער');
+  const rolesCadets = cadets.filter(c => {
+    if (!c.role || c.role.trim() === '' || c.role.trim() === 'צוער') return false;
+    
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return c.full_name.toLowerCase().includes(q) || c.role.toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   // Split by hierarchy
   const maham = rolesCadets.filter(c => c.role.trim() === 'מה"מ');
@@ -80,6 +90,17 @@ export default function Roles() {
             מיפוי בעלי התפקידים בהשלמה
           </p>
         </div>
+        
+        <div className="relative w-full md:w-72 mt-4 md:mt-0">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="חיפוש לפי שם או תפקיד..." 
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-4 pr-10 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm"
+          />
+        </div>
       </header>
 
       {rolesCadets.length === 0 ? (
@@ -99,7 +120,20 @@ export default function Roles() {
                 </div>
                 <h3 className="font-bold text-lg text-indigo-200 mb-2">מפקד ההשלמה (מה"מ)</h3>
                 {maham.map(m => (
-                  <div key={m.cadet_id} className="text-3xl font-black">{m.full_name}</div>
+                  <div key={m.cadet_id} className="flex flex-col items-center">
+                    <div className="text-3xl font-black mb-2">{m.full_name}</div>
+                    {m.phone_number && (
+                      <a 
+                        href={getWhatsAppLink(m.phone_number)}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-emerald-300 bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors"
+                        title="שלח הודעת וואטסאפ"
+                      >
+                        <MessageCircle size={18} />
+                      </a>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
@@ -118,7 +152,18 @@ export default function Roles() {
                       {m.team_number}
                     </div>
                     <span className="font-bold text-slate-800 leading-tight text-sm mb-1">{m.full_name}</span>
-                    <span className="text-xs font-medium text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full">ממ"ש צוות {m.team_number}</span>
+                    <span className="text-xs font-medium text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full mb-3">ממ"ש צוות {m.team_number}</span>
+                    {m.phone_number && (
+                      <a 
+                        href={getWhatsAppLink(m.phone_number)}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="mt-auto text-emerald-500 bg-emerald-50 p-1.5 rounded-full hover:bg-emerald-100 transition-colors"
+                        title="שלח הודעת וואטסאפ"
+                      >
+                        <MessageCircle size={16} />
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>
@@ -155,6 +200,17 @@ export default function Roles() {
                               <p className="font-bold text-slate-800 leading-tight">{cadet.full_name}</p>
                               {cadet.team_number && <p className="text-xs text-slate-500 mt-0.5">צוות {cadet.team_number}</p>}
                             </div>
+                            {cadet.phone_number && (
+                              <a 
+                                href={getWhatsAppLink(cadet.phone_number)}
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="mr-auto text-emerald-500 bg-emerald-50 p-1.5 rounded-full hover:bg-emerald-100 transition-colors"
+                                title="שלח הודעת וואטסאפ"
+                              >
+                                <MessageCircle size={16} />
+                              </a>
+                            )}
                           </div>
                         ))}
                       </div>

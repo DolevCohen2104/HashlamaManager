@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft, Edit3 } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft, Edit3, MessageCircle, Gift } from 'lucide-react';
 import type { UserProfile, CalendarEvent, Cadet, AttendanceLog } from '../types';
 import { fetchTodayEvents } from '../services/calendar';
 import { fetchCadets, fetchAttendanceForEvent, upsertAttendance } from '../services/db';
+import { getWhatsAppLink } from '../utils';
 
 interface Props {
   profile: UserProfile;
@@ -336,6 +337,17 @@ export default function Dashboard({ profile }: Props) {
                         <div className="flex items-stretch" style={{ minHeight: '52px' }}>
                           <div className="flex-1 px-3 flex items-center">
                             <span className="font-semibold text-slate-800 text-sm">{cadet.full_name}</span>
+                            {isPresent === false && cadet.phone_number && (
+                              <a 
+                                href={getWhatsAppLink(cadet.phone_number)}
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="mr-3 text-emerald-500 bg-emerald-50 p-1.5 rounded-full hover:bg-emerald-100 transition-colors flex-shrink-0"
+                                title="שלח הודעת וואטסאפ"
+                              >
+                                <MessageCircle size={14} />
+                              </a>
+                            )}
                           </div>
                           <button
                             onClick={() => handleToggle(cadet, true)}
@@ -517,6 +529,17 @@ export default function Dashboard({ profile }: Props) {
                     {/* Name */}
                     <div className="flex-1 px-4 flex items-center">
                       <span className="font-semibold text-slate-800 text-[15px] leading-tight">{cadet.full_name}</span>
+                      {isPresent === false && cadet.phone_number && (
+                        <a 
+                          href={getWhatsAppLink(cadet.phone_number)}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="mr-3 text-emerald-500 bg-emerald-50 p-1.5 rounded-full hover:bg-emerald-100 transition-colors flex-shrink-0"
+                          title="שלח הודעת וואטסאפ"
+                        >
+                          <MessageCircle size={16} />
+                        </a>
+                      )}
                     </div>
                     {/* ✓ button – large touch target */}
                     <button
@@ -611,6 +634,33 @@ export default function Dashboard({ profile }: Props) {
           {error}
         </div>
       )}
+
+      {/* Birthday Alert Banner */}
+      {(() => {
+        const today = new Date();
+        const birthdaysToday = cadets.filter(c => {
+          if (!c.birth_date) return false;
+          const bd = new Date(c.birth_date);
+          return bd.getDate() === today.getDate() && bd.getMonth() === today.getMonth();
+        });
+
+        if (birthdaysToday.length > 0) {
+          return (
+            <div className="mb-6 bg-gradient-to-r from-rose-400 to-orange-400 text-white px-4 py-4 rounded-xl flex items-center justify-between shadow-md">
+              <div className="flex items-center gap-3">
+                <Gift size={28} className="animate-bounce" />
+                <div>
+                  <h3 className="font-bold text-lg leading-none mb-1">מזל טוב לחוגגים היום! 🎉</h3>
+                  <p className="text-white/90 text-sm">
+                    {birthdaysToday.map(c => `${c.full_name} (צוות ${c.team_number})`).join(', ')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       {events.length === 0 && !error ? (
         <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">

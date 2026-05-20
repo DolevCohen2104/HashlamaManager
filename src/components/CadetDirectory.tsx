@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Phone, Calendar, UserCheck, Plus, Trash2, ChevronDown, ChevronLeft } from 'lucide-react';
+import { Users, Phone, Calendar, UserCheck, Plus, Trash2, ChevronDown, ChevronLeft, Search, Filter, MessageCircle } from 'lucide-react';
 import type { UserProfile, Cadet } from '../types';
 import { fetchCadets, addCadet, deleteCadet } from '../services/db';
+import { getWhatsAppLink } from '../utils';
 
 interface Props {
   profile: UserProfile;
@@ -15,6 +16,9 @@ export default function CadetDirectory({ profile }: Props) {
   
   const [isAdding, setIsAdding] = useState(false);
   const [newCadet, setNewCadet] = useState<Partial<Cadet>>({});
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [teamFilter, setTeamFilter] = useState('all');
 
   const isMaham = profile.role === 'מה"מ';
   const isMammash = profile.role === 'ממ"ש';
@@ -80,6 +84,33 @@ export default function CadetDirectory({ profile }: Props) {
             הוסף צוער
           </button>
         )}
+      </div>
+
+      {/* Search and Filter Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="חיפוש לפי שם או מספר אישי..." 
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-4 pr-10 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent shadow-sm"
+          />
+        </div>
+        <div className="relative w-full sm:w-48">
+          <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <select 
+            value={teamFilter}
+            onChange={e => setTeamFilter(e.target.value)}
+            className="w-full pl-4 pr-10 py-2 border border-slate-200 rounded-xl bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 appearance-none shadow-sm"
+          >
+            <option value="all">כל הצוותים</option>
+            {visibleTeams.map(t => (
+              <option key={t} value={t}>צוות {t}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {isMaham && isAdding && (
@@ -164,9 +195,23 @@ export default function CadetDirectory({ profile }: Props) {
 
       <div className="space-y-4">
         {visibleTeams.map(team => {
+          if (teamFilter !== 'all' && teamFilter !== team) return null;
+
           const isMammashOwnTeam = isMammash && team === profile.team_number?.toString();
-          const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
-          if (teamCadets.length === 0 && !isMaham) return null;
+          const teamCadets = cadets.filter(c => {
+            if (c.team_number?.toString() !== team) return false;
+            
+            // Search filter
+            if (searchQuery) {
+              const query = searchQuery.toLowerCase();
+              return c.full_name.toLowerCase().includes(query) || 
+                     c.personal_id.includes(query);
+            }
+            return true;
+          });
+          
+          if (teamCadets.length === 0 && !isMaham && !searchQuery) return null;
+          if (teamCadets.length === 0 && searchQuery) return null;
           
           const isExpanded = expandedTeam === team;
           
@@ -238,6 +283,18 @@ export default function CadetDirectory({ profile }: Props) {
                                 <div className="flex items-center gap-2">
                                   <Phone size={16} className="text-slate-400" />
                                   <span className="text-sm text-slate-700">{cadet.phone_number || 'לא עודכן'}</span>
+                                  {cadet.phone_number && (
+                                    <a 
+                                      href={getWhatsAppLink(cadet.phone_number)}
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="mr-auto text-emerald-500 bg-emerald-50 p-1.5 rounded-full hover:bg-emerald-100 transition-colors"
+                                      title="שלח הודעת וואטסאפ"
+                                      onClick={e => e.stopPropagation()}
+                                    >
+                                      <MessageCircle size={14} />
+                                    </a>
+                                  )}
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Calendar size={16} className="text-slate-400" />
