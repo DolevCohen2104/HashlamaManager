@@ -5,9 +5,7 @@ CREATE TYPE user_role AS ENUM ('maham', 'mammash', 'rohav');
 CREATE TABLE public.users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   personal_id TEXT UNIQUE NOT NULL,
-  full_name TEXT NOT NULL,
-  role user_role NOT NULL,
-  team_number INTEGER
+  role user_role NOT NULL
 );
 
 -- Enable RLS
@@ -30,7 +28,7 @@ CREATE TABLE public.cadets (
   cadet_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   full_name TEXT NOT NULL,
   personal_id TEXT UNIQUE NOT NULL,
-  team_number INTEGER NOT NULL CHECK (team_number BETWEEN 1 AND 8),
+  team_number INTEGER CHECK (team_number BETWEEN 1 AND 8),
   phone_number TEXT,
   birth_date DATE,
   specific_role TEXT
@@ -74,8 +72,9 @@ CREATE POLICY "Maham can manage attendance" ON public.attendance_logs FOR ALL US
 CREATE POLICY "Mammash can manage own team attendance" ON public.attendance_logs FOR ALL USING (
   EXISTS (
     SELECT 1 FROM public.users u 
-    JOIN public.cadets c ON u.team_number = c.team_number 
-    WHERE u.id = auth.uid() AND u.role = 'mammash' AND c.cadet_id = attendance_logs.cadet_id
+    JOIN public.cadets c_mammash ON u.personal_id = c_mammash.personal_id
+    JOIN public.cadets c_cadet ON c_mammash.team_number = c_cadet.team_number 
+    WHERE u.id = auth.uid() AND u.role = 'mammash' AND c_cadet.cadet_id = attendance_logs.cadet_id
   )
 );
 
