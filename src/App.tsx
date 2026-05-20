@@ -74,7 +74,7 @@ export default function App() {
               <span>ספר השלמה</span>
             </div>
             
-            {(profile.role === 'maham' || profile.role === 'rohav') && (
+            {(profile.role !== 'צוער' && profile.role !== 'ממ"ש') && (
               <div 
                 onClick={() => setActiveTab('export')}
                 className={`flex items-center p-3 rounded-lg mb-2 cursor-pointer transition-colors ${activeTab === 'export' ? 'bg-slate-700 border-r-4 border-sky-400' : 'hover:bg-slate-800'}`}
@@ -88,7 +88,7 @@ export default function App() {
         <div className="bg-slate-800 p-4 rounded-xl text-center text-sm">
            <p className="opacity-60 mb-1">משתמש נוכחי:</p>
            <p className="font-semibold">{profile.full_name}</p>
-           <p className="text-xs text-slate-400">({profile.role === 'maham' ? 'מה"מ' : profile.role === 'mammash' ? `ממ"ש צוות ${profile.team_number}` : 'תפקיד רוחב'})</p>
+           <p className="text-xs text-slate-400">({profile.role === 'ממ"ש' && profile.team_number ? `${profile.role} צוות ${profile.team_number}` : profile.role})</p>
            <button onClick={handleLogout} className="mt-4 flex items-center justify-center gap-2 text-red-400 hover:text-red-300 w-full transition-colors font-medium">
               <LogOut size={16} /> התנתק
            </button>
@@ -118,7 +118,7 @@ export default function App() {
         >
           <Users size={18} /> ספר השלמה
         </button>
-        {(profile.role === 'maham' || profile.role === 'rohav') && (
+        {(profile.role !== 'צוער' && profile.role !== 'ממ"ש') && (
           <button 
             onClick={() => setActiveTab('export')}
             className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'export' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}

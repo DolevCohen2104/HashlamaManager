@@ -58,7 +58,7 @@ export default function Dashboard({ profile }: Props) {
     }
   };
 
-  const isMammash = profile.role === 'mammash';
+  const isMammash = profile.role === 'ממ"ש';
   const relevantCadets = isMammash 
     ? cadets.filter(c => c.team_number === profile.team_number)
     : cadets;

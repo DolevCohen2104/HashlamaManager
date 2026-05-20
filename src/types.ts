@@ -1,11 +1,8 @@
-export type Role = 'maham' | 'mammash' | 'rohav';
-
 export interface UserProfile {
-  id: string; // The uid
   personal_id: string;
   full_name: string;
-  role: Role;
-  team_number: string; // "1"-"8", only required if role is mammash
+  role: string;
+  team_number: string | null;
 }
 
 export interface Cadet {
@@ -15,7 +12,7 @@ export interface Cadet {
   team_number: string;
   phone_number: string;
   birth_date: string;
-  specific_role: string;
+  role: string;
 }
 
 export interface AttendanceLog {

@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 export interface AppUser {
   personal_id: string;
-  role: 'maham' | 'mammash' | 'rohav';
+  role: string;
   full_name: string;
   team_number: string | null;
 }
@@ -28,28 +28,22 @@ export const initAuth = (
 
 export const signInWithPersonalId = async (personalId: string): Promise<AppUser | null> => {
   const cleanId = personalId.trim();
-  const { data: userData, error: userError } = await supabase
-    .from('users')
-    .select('personal_id, role')
+  const { data: cadetData, error: cadetError } = await supabase
+    .from('cadets')
+    .select('personal_id, role, full_name, team_number')
     .eq('personal_id', cleanId)
     .single();
 
-  if (userError || !userData) {
-    console.error('Sign in error:', userError);
-    throw new Error('שגיאה בהתחברות: מספר אישי לא מורשה במערכת (לא מוגדר בסגל)');
+  if (cadetError || !cadetData) {
+    console.error('Sign in error:', cadetError);
+    throw new Error('שגיאה בהתחברות: מספר אישי לא מזוהה במערכת');
   }
 
-  const { data: cadetData } = await supabase
-    .from('cadets')
-    .select('full_name, team_number')
-    .eq('personal_id', cleanId)
-    .single();
-
   const user: AppUser = {
-    personal_id: userData.personal_id,
-    role: userData.role,
-    full_name: cadetData?.full_name || 'משתמש מערכת',
-    team_number: cadetData?.team_number?.toString() || null,
+    personal_id: cadetData.personal_id,
+    role: cadetData.role || 'צוער',
+    full_name: cadetData.full_name || 'משתמש מערכת',
+    team_number: cadetData.team_number?.toString() || null,
   };
 
   localStorage.setItem('hashlama_user', JSON.stringify(user));

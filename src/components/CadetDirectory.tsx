@@ -30,11 +30,11 @@ export default function CadetDirectory({ profile }: Props) {
     setLoading(false);
   };
 
-  const isMaham = profile.role === 'maham';
-  const isRohav = profile.role === 'rohav';
-  const isMammash = profile.role === 'mammash';
+  const isMaham = profile.role === 'מה"מ';
+  const isMammash = profile.role === 'ממ"ש';
+  const isRohav = profile.role !== 'מה"מ' && profile.role !== 'ממ"ש' && profile.role !== 'צוער';
 
-  const visibleTeams = isMammash ? [profile.team_number] : ['1', '2', '3', '4', '5', '6', '7', '8'];
+  const visibleTeams = isMammash && profile.team_number ? [profile.team_number] : ['1', '2', '3', '4', '5', '6', '7', '8'];
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,12 +122,27 @@ export default function CadetDirectory({ profile }: Props) {
               value={newCadet.birth_date || ''}
               onChange={e => setNewCadet({...newCadet, birth_date: e.target.value})}
             />
-            <input 
-              placeholder="תפקיד בהשלמה (אופציונלי)"
-              className="px-3 py-2 border border-slate-300 rounded-md"
-              value={newCadet.specific_role || ''}
-              onChange={e => setNewCadet({...newCadet, specific_role: e.target.value})}
-            />
+            <select 
+              className="px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-700"
+              value={newCadet.role || 'צוער'}
+              onChange={e => setNewCadet({...newCadet, role: e.target.value})}
+            >
+              <option value="צוער">צוער</option>
+              <option value='ממ"ש'>ממ"ש</option>
+              <option value='מה"מ'>מה"מ</option>
+              <option value="א' סיור בינה">א' סיור בינה</option>
+              <option value="א' סיור ספירה">א' סיור ספירה</option>
+              <option value='קל"ג התנדבויות'>קל"ג התנדבויות</option>
+              <option value='קל"ג'>קל"ג</option>
+              <option value='קמב"צ'>קמב"צ</option>
+              <option value='קח"ן'>קח"ן</option>
+              <option value='קה"ד'>קה"ד</option>
+              <option value='קד"ת'>קד"ת</option>
+              <option value='קא"ג'>קא"ג</option>
+              <option value="ק' נשק">ק' נשק</option>
+              <option value='ק הגנ"ש'>ק' הגנ"ש</option>
+              <option value="מפקדת האקתון">מפקדת האקתון</option>
+            </select>
             
             <div className="md:col-span-2 lg:col-span-3 flex justify-end gap-3 mt-2">
               <button 
@@ -225,7 +240,7 @@ export default function CadetDirectory({ profile }: Props) {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <UserCheck size={16} className="text-slate-400" />
-                                  <span className="text-sm text-slate-700">{cadet.specific_role || 'צוער רגיל'}</span>
+                                  <span className="text-sm text-slate-700">{cadet.role || 'צוער'}</span>
                                 </div>
                               </div>
                             )}
