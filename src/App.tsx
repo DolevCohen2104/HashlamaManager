@@ -55,7 +55,7 @@ export default function App() {
   }
 
   return (
-    <div dir="rtl" className="h-screen w-full bg-[#F0F2F5] text-[#1E293B] font-sans grid grid-cols-1 md:grid-cols-[260px_1fr] overflow-hidden">
+    <div dir="rtl" className="h-[100dvh] w-full bg-[#F0F2F5] text-[#1E293B] font-sans flex flex-col md:grid md:grid-cols-[260px_1fr] overflow-hidden">
       <aside className="bg-slate-900 text-white p-6 flex flex-col justify-between overflow-y-auto hidden md:flex">
         <div>
           <div className="mb-8 flex items-center gap-3">
@@ -117,7 +117,7 @@ export default function App() {
       </aside>
 
       {/* Mobile Nav Header */}
-      <header className="md:hidden flex-none bg-slate-900 text-white shadow-md px-4 py-3 flex items-center justify-between z-40 relative">
+      <header className="md:hidden flex-none h-16 bg-slate-900 text-white shadow-md px-4 flex items-center justify-between z-40 relative shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center font-bold text-lg text-white shrink-0">ה</div>
           <div>
