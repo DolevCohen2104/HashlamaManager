@@ -99,10 +99,16 @@ export default function App() {
       </aside>
 
       {/* Mobile Nav Header */}
-      <header className="md:hidden bg-slate-900 text-white shadow-md p-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center font-bold text-lg text-white">ה</div>
-          <h1 className="font-bold">ניהול השלמה</h1>
+      <header className="md:hidden bg-slate-900 text-white shadow-md px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center font-bold text-lg text-white shrink-0">ה</div>
+          <div>
+            <h1 className="font-bold text-sm leading-tight">ניהול השלמה</h1>
+            <p className="text-xs text-slate-400 leading-tight">
+              {profile.full_name}
+              {profile.role && <span className="mr-1 text-sky-400">• {profile.role === 'ממ"ש' && profile.team_number ? `ממ"ש צוות ${profile.team_number}` : profile.role}</span>}
+            </p>
+          </div>
         </div>
         <button onClick={handleLogout} className="text-red-400 p-2"><LogOut size={20}/></button>
       </header>
@@ -131,7 +137,7 @@ export default function App() {
         )}
       </nav>
 
-      <main className="flex flex-col gap-6 p-4 md:p-8 overflow-y-auto overflow-x-hidden w-full">
+      <main className="flex flex-col gap-6 p-4 md:p-8 pb-20 md:pb-12 overflow-y-auto overflow-x-hidden w-full">
         {activeTab === 'dashboard' && <Dashboard profile={profile} />}
         {activeTab === 'directory' && <CadetDirectory profile={profile} />}
         {activeTab === 'export' && <ExportData profile={profile} />}
