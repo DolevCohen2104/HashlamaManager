@@ -1,0 +1,6 @@
+{
+  "name": "ניהול השלמה טכנולוגית",
+  "description": "אפליקציית מובייל לניהול שוטף של לוז, נוכחות ונתוני צוערים להשלמה חילית",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
