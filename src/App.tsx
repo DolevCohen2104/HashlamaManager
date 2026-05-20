@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, LayoutDashboard, Users, Download, LogOut, CheckCircle2 } from 'lucide-react';
+import { Shield, LayoutDashboard, Users, Download, LogOut, CheckCircle2, Gift } from 'lucide-react';
 import { initAuth, logout, AppUser } from './auth';
 
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import CadetDirectory from './components/CadetDirectory';
 import ExportData from './components/ExportData';
+import Birthdays from './components/Birthdays';
 
 export default function App() {
   const [profile, setProfile] = useState<AppUser | null>(null);
   const [needsAuth, setNeedsAuth] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'directory' | 'export'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'directory' | 'birthdays' | 'export'>('dashboard');
 
   useEffect(() => {
     const unsubscribe = initAuth(
@@ -76,6 +77,14 @@ export default function App() {
               <Users size={20} className="ml-3 opacity-70" />
               <span>ספר השלמה</span>
             </div>
+
+            <div 
+              onClick={() => setActiveTab('birthdays')}
+              className={`flex items-center p-3 rounded-lg mb-2 cursor-pointer transition-colors ${activeTab === 'birthdays' ? 'bg-slate-700 border-r-4 border-sky-400' : 'hover:bg-slate-800'}`}
+            >
+              <Gift size={20} className="ml-3 opacity-70" />
+              <span>ימי הולדת</span>
+            </div>
             
             {profile.role !== 'צוער' && (
               <div 
@@ -127,6 +136,12 @@ export default function App() {
         >
           <Users size={18} /> ספר השלמה
         </button>
+        <button 
+          onClick={() => setActiveTab('birthdays')}
+          className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'birthdays' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+        >
+          <Gift size={18} /> ימי הולדת
+        </button>
         {profile.role !== 'צוער' && (
           <button 
             onClick={() => setActiveTab('export')}
@@ -140,6 +155,7 @@ export default function App() {
       <main className="flex flex-col gap-6 p-4 md:p-8 pb-20 md:pb-12 overflow-y-auto overflow-x-hidden w-full">
         {activeTab === 'dashboard' && <Dashboard profile={profile} />}
         {activeTab === 'directory' && <CadetDirectory profile={profile} />}
+        {activeTab === 'birthdays' && <Birthdays />}
         {activeTab === 'export' && <ExportData profile={profile} />}
       </main>
     </div>

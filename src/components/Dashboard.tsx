@@ -71,6 +71,16 @@ export default function Dashboard({ profile }: Props) {
 
         if (currentEvent) {
           setSelectedEventId(currentEvent.id);
+          
+          // Auto-expand the inner accordion lists
+          if (profile.role === 'ממ"ש') {
+            setExpandedTeams(new Set([`mammash-${profile.team_number}`]));
+          } else {
+            // For Maham, maybe expand all or leave collapsed? Let's expand all
+            const allTeams = ['1', '2', '3', '4', '5', '6', '7', '8'].map(t => `edit-${t}`);
+            setExpandedTeams(new Set(allTeams));
+          }
+
           setAttendanceLoading(true);
           try {
             const logs = await fetchAttendanceForEvent(currentEvent.id);
