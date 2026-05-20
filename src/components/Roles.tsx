@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchCadets } from '../services/db';
 import type { Cadet } from '../types';
 import { Network, Loader2, AlertCircle, Briefcase, Users, Star, Search, MessageCircle } from 'lucide-react';
-import { getWhatsAppLink } from '../utils';
+import { getWhatsAppLink, formatRole } from '../utils';
 
 export default function Roles() {
   const [cadets, setCadets] = useState<Cadet[]>([]);
@@ -118,7 +118,9 @@ export default function Roles() {
                 <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:scale-110 transition-transform">
                   <Star size={48} />
                 </div>
-                <h3 className="font-bold text-lg text-indigo-200 mb-2">מפקד ההשלמה (מה"מ)</h3>
+                <h3 className="font-bold text-lg text-indigo-200 mb-2">
+                  {maham.length > 0 && maham[0].gender === 'female' ? 'מפקדת ההשלמה (מה"מית)' : 'מפקד ההשלמה (מה"מ)'}
+                </h3>
                 {maham.map(m => (
                   <div key={m.cadet_id} className="flex flex-col items-center">
                     <div className="text-3xl font-black mb-2">{m.full_name}</div>
@@ -152,7 +154,7 @@ export default function Roles() {
                       {m.team_number}
                     </div>
                     <span className="font-bold text-slate-800 leading-tight text-sm mb-1">{m.full_name}</span>
-                    <span className="text-xs font-medium text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full mb-3">ממ"ש צוות {m.team_number}</span>
+                    <span className="text-xs font-medium text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full mb-3">{formatRole('ממ"ש', m.gender)} צוות {m.team_number}</span>
                     {m.phone_number && (
                       <a 
                         href={getWhatsAppLink(m.phone_number)}
@@ -187,7 +189,7 @@ export default function Roles() {
                     <div className="p-5 pt-6 flex flex-col">
                       <div className="mb-4 inline-flex self-start items-center gap-2 px-3 py-1.5 bg-rose-50 text-rose-700 rounded-lg border border-rose-100 font-bold">
                         <Briefcase size={16} className="text-rose-500" />
-                        {roleName}
+                        {groupedOtherRoles[roleName].length === 1 ? formatRole(roleName, groupedOtherRoles[roleName][0].gender) : roleName}
                       </div>
 
                       <div className="space-y-3 mt-auto">

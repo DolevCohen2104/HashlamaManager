@@ -8,6 +8,7 @@ import CadetDirectory from './components/CadetDirectory';
 import ExportData from './components/ExportData';
 import Birthdays from './components/Birthdays';
 import Roles from './components/Roles';
+import { formatRole } from './utils';
 
 export default function App() {
   const [profile, setProfile] = useState<AppUser | null>(null);
@@ -109,7 +110,7 @@ export default function App() {
         <div className="bg-slate-800 p-4 rounded-xl text-center text-sm">
            <p className="opacity-60 mb-1">משתמש נוכחי:</p>
            <p className="font-semibold">{profile.full_name}</p>
-           <p className="text-xs text-slate-400">({profile.role === 'ממ"ש' && profile.team_number ? `${profile.role} צוות ${profile.team_number}` : profile.role})</p>
+           <p className="text-xs text-slate-400">({profile.role === 'ממ"ש' && profile.team_number ? `${formatRole(profile.role, profile.gender)} צוות ${profile.team_number}` : formatRole(profile.role, profile.gender)})</p>
            <button onClick={handleLogout} className="mt-4 flex items-center justify-center gap-2 text-red-400 hover:text-red-300 w-full transition-colors font-medium">
               <LogOut size={16} /> התנתק
            </button>
@@ -124,7 +125,7 @@ export default function App() {
             <h1 className="font-bold text-sm leading-tight">ניהול השלמה</h1>
             <p className="text-xs text-slate-400 leading-tight">
               {profile.full_name}
-              {profile.role && <span className="mr-1 text-sky-400">• {profile.role === 'ממ"ש' && profile.team_number ? `ממ"ש צוות ${profile.team_number}` : profile.role}</span>}
+              {profile.role && <span className="mr-1 text-sky-400">• {profile.role === 'ממ"ש' && profile.team_number ? `${formatRole(profile.role, profile.gender)} צוות ${profile.team_number}` : formatRole(profile.role, profile.gender)}</span>}
             </p>
           </div>
         </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Phone, Calendar, UserCheck, Plus, Trash2, ChevronDown, ChevronLeft, Search, Filter, MessageCircle } from 'lucide-react';
 import type { UserProfile, Cadet } from '../types';
 import { fetchCadets, addCadet, deleteCadet } from '../services/db';
-import { getWhatsAppLink } from '../utils';
+import { getWhatsAppLink, formatRole } from '../utils';
 
 interface Props {
   profile: UserProfile;
@@ -51,7 +51,7 @@ export default function CadetDirectory({ profile }: Props) {
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('למחוק צוער זה מסעיף השלמה?')) return;
+    if (!window.confirm('למחוק רשומה זו מסעיף השלמה?')) return;
     await deleteCadet(id);
     loadCadets();
   };
@@ -81,7 +81,7 @@ export default function CadetDirectory({ profile }: Props) {
             className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors shadow-sm self-start"
           >
             <Plus size={18} />
-            הוסף צוער
+            הוסף צוער/ת
           </button>
         )}
       </div>
@@ -115,7 +115,7 @@ export default function CadetDirectory({ profile }: Props) {
 
       {isMaham && isAdding && (
         <div className="bg-slate-50 border border-slate-200 p-5 rounded-xl mb-8 shadow-sm">
-          <h3 className="font-semibold text-lg mb-4 text-slate-800">הוספת צוער חדש</h3>
+          <h3 className="font-semibold text-lg mb-4 text-slate-800">הוספת צוער/ת חדש/ה</h3>
           <form onSubmit={handleAddSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <input 
               required
@@ -139,6 +139,14 @@ export default function CadetDirectory({ profile }: Props) {
             >
               <option value="" disabled>בחר צוות...</option>
               {['1','2','3','4','5','6','7','8'].map(t => <option key={t} value={t}>צוות {t}</option>)}
+            </select>
+            <select
+              className="px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-700"
+              value={newCadet.gender || 'male'}
+              onChange={e => setNewCadet({...newCadet, gender: e.target.value as 'male'|'female'})}
+            >
+              <option value="male">זכר</option>
+              <option value="female">נקבה</option>
             </select>
             <input 
               placeholder="טלפון ליצירת קשר"
@@ -186,7 +194,7 @@ export default function CadetDirectory({ profile }: Props) {
                 type="submit"
                 className="px-6 py-2 bg-blue-600 text-white rounded-md font-medium shadow-sm"
               >
-                שמור צוער
+                שמור
               </button>
             </div>
           </form>
@@ -302,7 +310,7 @@ export default function CadetDirectory({ profile }: Props) {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <UserCheck size={16} className="text-slate-400" />
-                                  <span className="text-sm text-slate-700">{cadet.role || 'צוער'}</span>
+                                  <span className="text-sm text-slate-700">{formatRole(cadet.role || 'צוער', cadet.gender)}</span>
                                 </div>
                               </div>
                             )}

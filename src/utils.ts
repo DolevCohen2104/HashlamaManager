@@ -14,3 +14,40 @@ export const getWhatsAppLink = (phoneNumber: string): string => {
   
   return `https://wa.me/${cleanNumber}`;
 };
+
+export const formatRole = (role: string, gender?: 'male' | 'female'): string => {
+  if (!role) return '';
+  if (gender !== 'female') return role;
+
+  // Exact matches
+  const exactMatches: Record<string, string> = {
+    'צוער': 'צוערת',
+    'ממ"ש': 'ממ"שית',
+    'מה"מ': 'מה"מית',
+    'קמב"צ': 'קמב"צית',
+    'קל"ג': 'קל"גית',
+    'קח"ן': 'קח"נית',
+    'קה"ד': 'קה"דית',
+    'קד"ת': 'קד"תית',
+    'קא"ג': 'קא"גית',
+    'ק\' נשק': 'קצינת נשק',
+    'ק\' הגנ"ש': 'קצינת הגנ"ש'
+  };
+
+  if (exactMatches[role]) {
+    return exactMatches[role];
+  }
+
+  // Partial match replacements
+  let formatted = role;
+  formatted = formatted.replace('קל"ג התנדבויות', 'קל"גית התנדבויות');
+  formatted = formatted.replace('מפקדת האקתון', 'מפקדת האקתון'); // Already female
+  
+  // If it starts with "א' " (Achrai) -> "אחראית"
+  if (formatted.startsWith("א' ")) {
+    formatted = formatted.replace("א' ", "אחראית ");
+  }
+
+  return formatted;
+};
+
