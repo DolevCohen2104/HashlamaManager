@@ -101,7 +101,7 @@ export default function Birthdays() {
 
           return (
             <div 
-              key={index} 
+              key={monthIndex} 
               className={`flex flex-col rounded-2xl overflow-hidden shadow-sm border-2 transition-all hover:shadow-md ${
                 isCurrentMonth 
                   ? 'border-rose-400 bg-rose-50/30' 
