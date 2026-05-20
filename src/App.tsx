@@ -117,7 +117,7 @@ export default function App() {
       </aside>
 
       {/* Mobile Nav Header */}
-      <header className="md:hidden bg-slate-900 text-white shadow-md px-4 py-3 flex items-center justify-between">
+      <header className="md:hidden shrink-0 bg-slate-900 text-white shadow-md px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center font-bold text-lg text-white shrink-0">ה</div>
           <div>
@@ -132,7 +132,7 @@ export default function App() {
       </header>
       
       {/* Mobile Tabs */}
-      <nav className="md:hidden bg-white border-b border-slate-200 shadow-sm flex items-center">
+      <nav className="md:hidden shrink-0 bg-white border-b border-slate-200 shadow-sm flex items-center">
         <button 
           onClick={() => setActiveTab('dashboard')}
           className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'dashboard' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
@@ -167,7 +167,7 @@ export default function App() {
         )}
       </nav>
 
-      <main className="flex flex-col gap-6 p-4 md:p-8 pb-20 md:pb-12 overflow-y-auto overflow-x-hidden w-full">
+      <main className="flex-1 flex flex-col gap-6 p-4 md:p-8 pb-20 md:pb-12 overflow-y-auto overflow-x-hidden w-full">
         {activeTab === 'dashboard' && <Dashboard profile={profile} />}
         {activeTab === 'directory' && <CadetDirectory profile={profile} />}
         {activeTab === 'birthdays' && <Birthdays />}
