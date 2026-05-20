@@ -66,7 +66,7 @@ export default function App() {
               className={`flex items-center p-3 rounded-lg mb-2 cursor-pointer transition-colors ${activeTab === 'dashboard' ? 'bg-slate-700 border-r-4 border-sky-400' : 'hover:bg-slate-800'}`}
             >
               <LayoutDashboard size={20} className="ml-3 opacity-70" />
-              <span>דאשבורד ראשי</span>
+              <span>לו"ז יומי</span>
             </div>
             
             {profile.role !== 'צוער' && (
@@ -115,7 +115,7 @@ export default function App() {
           onClick={() => setActiveTab('dashboard')}
           className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'dashboard' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
         >
-          <LayoutDashboard size={18} /> דאשבורד
+          <LayoutDashboard size={18} /> לו"ז יומי
         </button>
         {profile.role !== 'צוער' && (
           <button 
