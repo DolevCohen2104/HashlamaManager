@@ -18,6 +18,14 @@ export default function Dashboard({ profile }: Props) {
   const [attendance, setAttendance] = useState<AttendanceLog[]>([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
   const [mahamEditMode, setMahamEditMode] = useState(false);
+  const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
+
+  const toggleTeam = (team: string) =>
+    setExpandedTeams(prev => {
+      const next = new Set(prev);
+      next.has(team) ? next.delete(team) : next.add(team);
+      return next;
+    });
 
   useEffect(() => {
     loadData();
@@ -223,65 +231,79 @@ export default function Dashboard({ profile }: Props) {
     };
 
     return (
-      <div className="w-full space-y-6">
+      <div className="w-full space-y-3">
         {teams.map(team => {
           const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
           if (teamCadets.length === 0) return null;
+          const isExpanded = expandedTeams.has(`edit-${team}`);
+          const markedCount = teamCadets.filter(c => attendance.some(a => a.cadet_id === c.cadet_id)).length;
+          const presentCount = teamCadets.filter(c => attendance.some(a => a.cadet_id === c.cadet_id && (a.status === true || (a.status as any) === 't'))).length;
           return (
-            <div key={team}>
-              <div className="flex items-center justify-between mb-2">
-                <h5 className="font-bold text-slate-700 text-base">צוות {team}</h5>
+            <div key={team} className="border border-slate-200 rounded-xl overflow-hidden">
+              {/* Team header – always visible */}
+              <div className="flex items-center justify-between px-4 py-3 bg-slate-50">
+                <button
+                  onClick={() => toggleTeam(`edit-${team}`)}
+                  className="flex items-center gap-2 flex-1 text-right"
+                >
+                  <ChevronDown size={16} className={`text-slate-400 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+                  <span className="font-bold text-slate-700">צוות {team}</span>
+                  <span className="text-xs text-slate-500 mr-1">({presentCount}/{teamCadets.length} סומנו)</span>
+                </button>
                 <button
                   onClick={() => markTeamAllPresent(teamCadets)}
-                  className="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold px-3 py-1 rounded-lg transition-colors"
+                  className="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold px-3 py-1.5 rounded-lg transition-colors shrink-0"
                 >
                   כולם נוכחים
                 </button>
               </div>
-              <div className="space-y-1.5">
-                {teamCadets.map(cadet => {
-                  const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
-                  const marked = log !== undefined;
-                  const isPresent = log?.status;
-                  return (
-                    <div key={cadet.cadet_id} className={`rounded-xl border-2 overflow-hidden transition-colors ${
-                      !marked ? 'border-slate-200 bg-white' :
-                      isPresent ? 'border-emerald-300 bg-emerald-50' :
-                      'border-red-300 bg-red-50/60'
-                    }`}>
-                      <div className="flex items-stretch" style={{ minHeight: '52px' }}>
-                        <div className="flex-1 px-3 flex items-center">
-                          <span className="font-semibold text-slate-800 text-sm">{cadet.full_name}</span>
+              {/* Cadet list – collapsible */}
+              {isExpanded && (
+                <div className="p-3 space-y-1.5 border-t border-slate-100">
+                  {teamCadets.map(cadet => {
+                    const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
+                    const marked = log !== undefined;
+                    const isPresent = log?.status;
+                    return (
+                      <div key={cadet.cadet_id} className={`rounded-xl border-2 overflow-hidden transition-colors ${
+                        !marked ? 'border-slate-200 bg-white' :
+                        isPresent ? 'border-emerald-300 bg-emerald-50' :
+                        'border-red-300 bg-red-50/60'
+                      }`}>
+                        <div className="flex items-stretch" style={{ minHeight: '52px' }}>
+                          <div className="flex-1 px-3 flex items-center">
+                            <span className="font-semibold text-slate-800 text-sm">{cadet.full_name}</span>
+                          </div>
+                          <button
+                            onClick={() => handleToggle(cadet, true)}
+                            className={`w-14 flex items-center justify-center text-xl font-bold border-r border-slate-100 transition-colors active:scale-95 ${
+                              isPresent === true ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400 hover:bg-emerald-100 hover:text-emerald-600'
+                            }`}
+                          >✓</button>
+                          <button
+                            onClick={() => handleToggle(cadet, false)}
+                            className={`w-14 flex items-center justify-center text-xl font-bold transition-colors active:scale-95 ${
+                              isPresent === false ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-400 hover:bg-red-100 hover:text-red-600'
+                            }`}
+                          >✗</button>
                         </div>
-                        <button
-                          onClick={() => handleToggle(cadet, true)}
-                          className={`w-14 flex items-center justify-center text-xl font-bold border-r border-slate-100 transition-colors active:scale-95 ${
-                            isPresent === true ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400 hover:bg-emerald-100 hover:text-emerald-600'
-                          }`}
-                        >✓</button>
-                        <button
-                          onClick={() => handleToggle(cadet, false)}
-                          className={`w-14 flex items-center justify-center text-xl font-bold transition-colors active:scale-95 ${
-                            isPresent === false ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-400 hover:bg-red-100 hover:text-red-600'
-                          }`}
-                        >✗</button>
+                        {isPresent === false && (
+                          <div className="px-3 pb-2 pt-1.5 border-t border-red-200">
+                            <input
+                              type="text"
+                              placeholder="סיבת היעדרות..."
+                              value={log?.absence_reason || ''}
+                              onChange={e => handleReasonChange(cadet.cadet_id, e.target.value)}
+                              onBlur={e => handleReasonBlur(cadet.cadet_id, e.target.value)}
+                              className="w-full text-sm bg-white border border-red-200 text-red-700 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-red-400 placeholder:text-red-300"
+                            />
+                          </div>
+                        )}
                       </div>
-                      {isPresent === false && (
-                        <div className="px-3 pb-2 pt-1.5 border-t border-red-200">
-                          <input
-                            type="text"
-                            placeholder="סיבת היעדרות..."
-                            value={log?.absence_reason || ''}
-                            onChange={e => handleReasonChange(cadet.cadet_id, e.target.value)}
-                            onBlur={e => handleReasonBlur(cadet.cadet_id, e.target.value)}
-                            className="w-full text-sm bg-white border border-red-200 text-red-700 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-red-400 placeholder:text-red-300"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
@@ -289,9 +311,14 @@ export default function Dashboard({ profile }: Props) {
     );
   };
 
-  // ─── Mammash mobile-friendly attendance list ───────────────────────────────
   const renderMammashList = (eventId: string) => {
     if (selectedEventId !== eventId) return null;
+
+    const myTeam = profile.team_number?.toString() ?? '';
+    const isExpanded = expandedTeams.has(`mammash-${myTeam}`);
+    const presentCount = relevantCadets.filter(c =>
+      attendance.some(a => a.cadet_id === c.cadet_id && (a.status === true || (a.status as any) === 't'))
+    ).length;
 
     const markAllPresent = async () => {
       const now = new Date().toISOString();
@@ -330,29 +357,36 @@ export default function Dashboard({ profile }: Props) {
     };
 
     return (
-      <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-        {/* Header row */}
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="font-semibold text-slate-800 flex items-center gap-2">
-            <CheckCircle size={16} className="text-emerald-500" />
-            סימון נוכחות – צוות {profile.team_number}
-          </h4>
-          {relevantCadets.length > 0 && (
+      <div className="mt-4">
+        {/* Team header – always visible */}
+        <div className="border border-slate-200 rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-slate-50">
             <button
-              onClick={markAllPresent}
-              className="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-all shadow-sm"
+              onClick={() => toggleTeam(`mammash-${myTeam}`)}
+              className="flex items-center gap-2 flex-1 text-right"
             >
-              <CheckCircle size={14} />
-              כולם נוכחים
+              <ChevronDown size={16} className={`text-slate-400 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+              <span className="font-semibold text-slate-800">צוות {myTeam}</span>
+              <span className="text-xs text-slate-500 mr-1">({presentCount}/{relevantCadets.length} סומנו)</span>
             </button>
-          )}
-        </div>
+            {relevantCadets.length > 0 && (
+              <button
+                onClick={markAllPresent}
+                className="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-all shadow-sm shrink-0"
+              >
+                <CheckCircle size={14} />
+                כולם נוכחים
+              </button>
+            )}
+          </div>
 
-        {relevantCadets.length === 0 ? (
-          <p className="text-sm text-slate-500">אין צוערים רשומים לצוות זה.</p>
-        ) : (
-          <div className="space-y-2">
-            {relevantCadets.map(cadet => {
+          {/* Cadet list – collapsible */}
+          {isExpanded && (
+            <div className="p-3 space-y-2 border-t border-slate-100">
+              {relevantCadets.length === 0 ? (
+                <p className="text-sm text-slate-500">אין צוערים רשומים לצוות זה.</p>
+              ) : (
+                relevantCadets.map(cadet => {
               const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
               // 3 states: undefined = not marked (grey), true = present (green), false = absent (red)
               const marked = log !== undefined;
@@ -452,7 +486,8 @@ export default function Dashboard({ profile }: Props) {
               );
             })}
           </div>
-        )}
+          )}
+        </div>
       </div>
     );
   };
