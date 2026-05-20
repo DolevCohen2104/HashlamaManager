@@ -27,10 +27,11 @@ export const initAuth = (
 };
 
 export const signInWithPersonalId = async (personalId: string): Promise<AppUser | null> => {
+  const cleanId = personalId.trim();
   const { data: userData, error: userError } = await supabase
     .from('users')
     .select('personal_id, role')
-    .eq('personal_id', personalId)
+    .eq('personal_id', cleanId)
     .single();
 
   if (userError || !userData) {
@@ -41,7 +42,7 @@ export const signInWithPersonalId = async (personalId: string): Promise<AppUser 
   const { data: cadetData } = await supabase
     .from('cadets')
     .select('full_name, team_number')
-    .eq('personal_id', personalId)
+    .eq('personal_id', cleanId)
     .single();
 
   const user: AppUser = {
