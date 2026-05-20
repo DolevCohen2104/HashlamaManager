@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft, Edit3 } from 'lucide-react';
 import type { UserProfile, CalendarEvent, Cadet, AttendanceLog } from '../types';
 import { fetchTodayEvents } from '../services/calendar';
 import { fetchCadets, fetchAttendanceForEvent, upsertAttendance } from '../services/db';
@@ -17,6 +17,7 @@ export default function Dashboard({ profile }: Props) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [attendance, setAttendance] = useState<AttendanceLog[]>([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [mahamEditMode, setMahamEditMode] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -48,6 +49,7 @@ export default function Dashboard({ profile }: Props) {
     if (selectedEventId === eventId) {
       setSelectedEventId(null);
       setAttendance([]);
+      setMahamEditMode(false);
       return;
     }
     setSelectedEventId(eventId);
@@ -157,6 +159,132 @@ export default function Dashboard({ profile }: Props) {
             );
           })}
         </div>
+      </div>
+    );
+  };
+
+  // ─── Maham edit mode: full cadet list grouped by team ────────────────────────
+  const renderMahamEdit = (eventId: string) => {
+    const teams = ['1', '2', '3', '4', '5', '6', '7', '8'];
+
+    const handleToggle = async (cadet: Cadet, newStatus: boolean) => {
+      const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
+      const newLog = {
+        event_id: eventId,
+        cadet_id: cadet.cadet_id,
+        status: newStatus,
+        absence_reason: '',
+        notes: '',
+        updated_by: profile.personal_id,
+        updated_at: new Date().toISOString(),
+      };
+      const tempId = log?.log_id ?? Math.random().toString();
+      setAttendance(prev => {
+        const existing = [...prev];
+        const idx = existing.findIndex(a => a.cadet_id === cadet.cadet_id);
+        if (idx > -1) existing[idx] = { ...newLog, log_id: tempId };
+        else existing.push({ ...newLog, log_id: tempId });
+        return existing;
+      });
+      await upsertAttendance(newLog);
+      const fresh = await fetchAttendanceForEvent(eventId);
+      setAttendance(fresh);
+    };
+
+    const handleReasonChange = (cadetId: string, reason: string) => {
+      setAttendance(prev =>
+        prev.map(a => a.cadet_id === cadetId ? { ...a, absence_reason: reason } : a)
+      );
+    };
+
+    const handleReasonBlur = async (cadetId: string, reason: string) => {
+      const log = attendance.find(a => a.cadet_id === cadetId);
+      if (!log) return;
+      await upsertAttendance({ ...log, absence_reason: reason });
+    };
+
+    const markTeamAllPresent = async (teamCadets: Cadet[]) => {
+      const now = new Date().toISOString();
+      setAttendance(prev => {
+        const next = [...prev];
+        teamCadets.forEach(cadet => {
+          const idx = next.findIndex(a => a.cadet_id === cadet.cadet_id);
+          const newLog = { event_id: eventId, cadet_id: cadet.cadet_id, status: true, absence_reason: '', notes: '', updated_by: profile.personal_id, updated_at: now, log_id: next[idx]?.log_id ?? Math.random().toString() };
+          if (idx > -1) next[idx] = newLog;
+          else next.push(newLog);
+        });
+        return next;
+      });
+      await Promise.all(teamCadets.map(cadet =>
+        upsertAttendance({ event_id: eventId, cadet_id: cadet.cadet_id, status: true, absence_reason: '', notes: '', updated_by: profile.personal_id, updated_at: now })
+      ));
+      const fresh = await fetchAttendanceForEvent(eventId);
+      setAttendance(fresh);
+    };
+
+    return (
+      <div className="w-full space-y-6">
+        {teams.map(team => {
+          const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
+          if (teamCadets.length === 0) return null;
+          return (
+            <div key={team}>
+              <div className="flex items-center justify-between mb-2">
+                <h5 className="font-bold text-slate-700 text-base">צוות {team}</h5>
+                <button
+                  onClick={() => markTeamAllPresent(teamCadets)}
+                  className="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold px-3 py-1 rounded-lg transition-colors"
+                >
+                  כולם נוכחים
+                </button>
+              </div>
+              <div className="space-y-1.5">
+                {teamCadets.map(cadet => {
+                  const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
+                  const marked = log !== undefined;
+                  const isPresent = log?.status;
+                  return (
+                    <div key={cadet.cadet_id} className={`rounded-xl border-2 overflow-hidden transition-colors ${
+                      !marked ? 'border-slate-200 bg-white' :
+                      isPresent ? 'border-emerald-300 bg-emerald-50' :
+                      'border-red-300 bg-red-50/60'
+                    }`}>
+                      <div className="flex items-stretch" style={{ minHeight: '52px' }}>
+                        <div className="flex-1 px-3 flex items-center">
+                          <span className="font-semibold text-slate-800 text-sm">{cadet.full_name}</span>
+                        </div>
+                        <button
+                          onClick={() => handleToggle(cadet, true)}
+                          className={`w-14 flex items-center justify-center text-xl font-bold border-r border-slate-100 transition-colors active:scale-95 ${
+                            isPresent === true ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400 hover:bg-emerald-100 hover:text-emerald-600'
+                          }`}
+                        >✓</button>
+                        <button
+                          onClick={() => handleToggle(cadet, false)}
+                          className={`w-14 flex items-center justify-center text-xl font-bold transition-colors active:scale-95 ${
+                            isPresent === false ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-400 hover:bg-red-100 hover:text-red-600'
+                          }`}
+                        >✗</button>
+                      </div>
+                      {isPresent === false && (
+                        <div className="px-3 pb-2 pt-1.5 border-t border-red-200">
+                          <input
+                            type="text"
+                            placeholder="סיבת היעדרות..."
+                            value={log?.absence_reason || ''}
+                            onChange={e => handleReasonChange(cadet.cadet_id, e.target.value)}
+                            onBlur={e => handleReasonBlur(cadet.cadet_id, e.target.value)}
+                            className="w-full text-sm bg-white border border-red-200 text-red-700 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-red-400 placeholder:text-red-300"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -425,23 +553,38 @@ export default function Dashboard({ profile }: Props) {
         </div>
       )}
 
-      {/* Maham Popup */}
       {!isMammash && !isCadet && selectedEventId && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-              <h3 className="font-bold text-lg text-slate-800">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center gap-3">
+              <h3 className="font-bold text-lg text-slate-800 truncate">
                 מצבת נוכחות – {events.find(e => e.id === selectedEventId)?.summary}
               </h3>
-              <button 
-                onClick={() => setSelectedEventId(null)}
-                className="text-slate-400 hover:bg-slate-200 hover:text-slate-700 rounded-lg transition-colors p-1"
-              >
-                <XCircle size={28} />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => setMahamEditMode(m => !m)}
+                  className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
+                    mahamEditMode
+                      ? 'bg-sky-600 text-white'
+                      : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                  }`}
+                >
+                  <Edit3 size={13} />
+                  {mahamEditMode ? 'צפייה' : 'עריכה'}
+                </button>
+                <button 
+                  onClick={() => { setSelectedEventId(null); setMahamEditMode(false); }}
+                  className="text-slate-400 hover:bg-slate-200 hover:text-slate-700 rounded-lg transition-colors p-1"
+                >
+                  <XCircle size={28} />
+                </button>
+              </div>
             </div>
             <div className="p-6 overflow-y-auto" dir="rtl">
-              {renderMahamSummary(selectedEventId)}
+              {mahamEditMode
+                ? renderMahamEdit(selectedEventId)
+                : renderMahamSummary(selectedEventId)
+              }
             </div>
           </div>
         </div>
