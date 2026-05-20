@@ -117,7 +117,7 @@ export default function App() {
       </aside>
 
       {/* Mobile Nav Header */}
-      <header className="md:hidden shrink-0 bg-slate-900 text-white shadow-md px-4 py-3 flex items-center justify-between">
+      <header className="md:hidden flex-none bg-slate-900 text-white shadow-md px-4 py-3 flex items-center justify-between z-40 relative">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center font-bold text-lg text-white shrink-0">ה</div>
           <div>
@@ -131,8 +131,8 @@ export default function App() {
         <button onClick={handleLogout} className="text-red-400 p-2"><LogOut size={20}/></button>
       </header>
       
-      {/* Mobile Tabs */}
-      <nav className="md:hidden shrink-0 bg-white border-b border-slate-200 shadow-sm flex items-center">
+      {/* Mobile Tabs - Fixed at bottom */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] flex items-center pb-safe">
         <button 
           onClick={() => setActiveTab('dashboard')}
           className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'dashboard' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
