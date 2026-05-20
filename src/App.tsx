@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, LayoutDashboard, Users, Download, LogOut, CheckCircle2 } from 'lucide-react';
 import { initAuth, logout, AppUser } from './auth';
-import { supabase } from './supabase';
 
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
@@ -17,45 +16,10 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = initAuth(
-      async (user) => {
-        try {
-          const personalId = user.email?.split('@')[0];
-          if (!personalId) throw new Error("No personal ID found in token");
-          
-          // Get role
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('personal_id, role')
-            .eq('personal_id', personalId)
-            .single();
-            
-          if (userError || !userData) {
-            // Force logout if they authenticated in Supabase but are not in public.users
-            throw new Error("User not found in public.users");
-          }
-          
-          // Get details
-          const { data: cadetData } = await supabase
-            .from('cadets')
-            .select('full_name, team_number')
-            .eq('personal_id', personalId)
-            .single();
-            
-          setProfile({
-            personal_id: userData.personal_id,
-            role: userData.role,
-            full_name: cadetData?.full_name || 'משתמש',
-            team_number: cadetData?.team_number?.toString() || null,
-          });
-          setNeedsAuth(false);
-        } catch (err) {
-          console.error("Failed to load profile", err);
-          await logout();
-          setProfile(null);
-          setNeedsAuth(true);
-        } finally {
-          setIsLoading(false);
-        }
+      (user) => {
+        setProfile(user);
+        setNeedsAuth(false);
+        setIsLoading(false);
       },
       () => {
         setProfile(null);
