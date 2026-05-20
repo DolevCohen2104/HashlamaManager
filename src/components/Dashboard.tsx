@@ -59,6 +59,8 @@ export default function Dashboard({ profile }: Props) {
   };
 
   const isMammash = profile.role === 'ממ"ש';
+  const isCadet = profile.role === 'צוער';
+  
   const relevantCadets = isMammash 
     ? cadets.filter(c => c.team_number?.toString() === profile.team_number?.toString())
     : cadets;
@@ -123,10 +125,54 @@ export default function Dashboard({ profile }: Props) {
     
     return (
       <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-        <h4 className="font-medium text-slate-800 mb-3 flex items-center gap-2">
-          <CheckCircle size={16} className="text-emerald-500" />
-          סימון נוכחות צוותית - צוות {profile.team_number}
-        </h4>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="font-medium text-slate-800 flex items-center gap-2">
+            <CheckCircle size={16} className="text-emerald-500" />
+            סימון נוכחות צוותית - צוות {profile.team_number}
+          </h4>
+          {relevantCadets.length > 0 && (
+            <button 
+              onClick={async () => {
+                // Optimistically set all to present in UI
+                const now = new Date().toISOString();
+                const newAttendance = [...attendance];
+                
+                const promises = relevantCadets.map(cadet => {
+                  const log = attendance.find(a => a.cadet_id === cadet.cadet_id);
+                  if (log && log.status === true) return Promise.resolve();
+                  
+                  const newLog = {
+                    event_id: eventId,
+                    cadet_id: cadet.cadet_id,
+                    status: true,
+                    absence_reason: '',
+                    notes: '',
+                    updated_by: profile.personal_id,
+                    updated_at: now
+                  };
+                  
+                  // Update local stateoptimistically
+                  const idx = newAttendance.findIndex(a => a.cadet_id === cadet.cadet_id);
+                  if (idx > -1) newAttendance[idx] = { ...newLog, log_id: log!.log_id };
+                  else newAttendance.push({ ...newLog, log_id: Math.random().toString() });
+                  
+                  return upsertAttendance(newLog, log?.log_id);
+                });
+                
+                setAttendance(newAttendance);
+                await Promise.all(promises);
+                
+                // Refresh from DB to get real log_ids
+                const logs = await fetchAttendanceForEvent(eventId);
+                setAttendance(logs);
+              }}
+              className="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+            >
+              <CheckCircle size={14} />
+              אשר נוכחות לכולם
+            </button>
+          )}
+        </div>
         <div className="space-y-3">
           {relevantCadets.length === 0 ? (
             <p className="text-sm text-slate-500">אין צוערים רשומים לצוות זה. הוסף צוערים בספר השלמה.</p>
@@ -142,7 +188,7 @@ export default function Dashboard({ profile }: Props) {
                   status,
                   absence_reason: status ? '' : 'לוז חיצוני', // default reason
                   notes: '',
-                  updated_by: profile.id,
+                  updated_by: profile.personal_id,
                   updated_at: new Date().toISOString()
                 };
                 await upsertAttendance(newLog, log?.log_id);
@@ -184,18 +230,13 @@ export default function Dashboard({ profile }: Props) {
                     </button>
                     
                     {!isPresent && (
-                      <select 
+                      <input 
+                        type="text"
+                        placeholder="סיבת היעדרות (חופשי)..."
                         value={log?.absence_reason || ''}
                         onChange={(e) => handleReasonChange(e.target.value)}
-                        className="text-sm bg-white border border-red-200 text-red-700 rounded-md py-1.5 px-2 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      >
-                        <option value="לוז חיצוני">לוז חיצוני</option>
-                        <option value="הפניה">הפניה</option>
-                        <option value="גימלים">גימלים</option>
-                        <option value="חופש">חופש</option>
-                        <option value="שמירה">שמירה</option>
-                        <option value="אחר">אחר</option>
-                      </select>
+                        className="text-sm bg-white border border-red-200 text-red-700 rounded-md py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-red-500 w-48 placeholder:text-red-300"
+                      />
                     )}
                   </div>
                 </div>
@@ -233,16 +274,18 @@ export default function Dashboard({ profile }: Props) {
           </p>
         </div>
         
-        <div className="flex gap-4">
-          <div className="bg-white rounded-xl p-5 shadow-sm border-b-4 border-emerald-500 text-center min-w-[160px]">
-            <p className="text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">
-              {isMammash ? 'כוח אדם בצוות' : 'סך הכל מצבה בהשלמה'}
-            </p>
-            <p className="text-3xl font-black text-slate-800">
-              {totalRelevantCadets}
-            </p>
+        {!isCadet && (
+          <div className="flex gap-4">
+            <div className="bg-white rounded-xl p-5 shadow-sm border-b-4 border-emerald-500 text-center min-w-[160px]">
+              <p className="text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">
+                {isMammash ? 'כוח אדם בצוות' : 'סך הכל מצבה בהשלמה'}
+              </p>
+              <p className="text-3xl font-black text-slate-800">
+                {totalRelevantCadets}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </header>
 
       {error && (
@@ -262,8 +305,8 @@ export default function Dashboard({ profile }: Props) {
           {events.map((event) => (
             <div key={event.id} className="bg-white border-r-4 border-sky-400 rounded-l-lg rounded-r-none mb-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-t border-b border-l border-slate-100 overflow-hidden">
               <button 
-                onClick={() => loadEventAttendance(event.id)}
-                className="w-full text-right p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer focus:outline-none hover:bg-slate-50 transition-colors"
+                onClick={() => !isCadet && loadEventAttendance(event.id)}
+                className={`w-full text-right p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 focus:outline-none transition-colors ${!isCadet ? 'cursor-pointer hover:bg-slate-50' : 'cursor-default'}`}
               >
                 <div className="flex items-center gap-4">
                   <div className="text-slate-400 font-mono text-sm w-12 shrink-0">
@@ -280,12 +323,14 @@ export default function Dashboard({ profile }: Props) {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-1 text-sky-600 bg-sky-50 px-2 py-1 rounded">
-                  <span className="text-xs font-bold">
-                    {selectedEventId === event.id ? 'סגור נוכחות' : 'ניהול נוכחות'}
-                  </span>
-                  {selectedEventId === event.id ? <ChevronDown size={14} /> : <ChevronLeft size={14} />}
-                </div>
+                {!isCadet && (
+                  <div className="flex items-center gap-1 text-sky-600 bg-sky-50 px-2 py-1 rounded">
+                    <span className="text-xs font-bold">
+                      {selectedEventId === event.id ? 'סגור נוכחות' : 'ניהול נוכחות'}
+                    </span>
+                    {selectedEventId === event.id ? <ChevronDown size={14} /> : <ChevronLeft size={14} />}
+                  </div>
+                )}
               </button>
               
               {/* Expandable attendance area */}

@@ -69,13 +69,15 @@ export default function App() {
               <span>דאשבורד ראשי</span>
             </div>
             
-            <div 
-              onClick={() => setActiveTab('directory')}
-              className={`flex items-center p-3 rounded-lg mb-2 cursor-pointer transition-colors ${activeTab === 'directory' ? 'bg-slate-700 border-r-4 border-sky-400' : 'hover:bg-slate-800'}`}
-            >
-              <Users size={20} className="ml-3 opacity-70" />
-              <span>ספר השלמה</span>
-            </div>
+            {profile.role !== 'צוער' && (
+              <div 
+                onClick={() => setActiveTab('directory')}
+                className={`flex items-center p-3 rounded-lg mb-2 cursor-pointer transition-colors ${activeTab === 'directory' ? 'bg-slate-700 border-r-4 border-sky-400' : 'hover:bg-slate-800'}`}
+              >
+                <Users size={20} className="ml-3 opacity-70" />
+                <span>ספר השלמה</span>
+              </div>
+            )}
             
             {(profile.role !== 'צוער' && profile.role !== 'ממ"ש') && (
               <div 
@@ -115,12 +117,14 @@ export default function App() {
         >
           <LayoutDashboard size={18} /> דאשבורד
         </button>
-        <button 
-          onClick={() => setActiveTab('directory')}
-          className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'directory' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
-        >
-          <Users size={18} /> ספר השלמה
-        </button>
+        {profile.role !== 'צוער' && (
+          <button 
+            onClick={() => setActiveTab('directory')}
+            className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'directory' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+          >
+            <Users size={18} /> ספר השלמה
+          </button>
+        )}
         {(profile.role !== 'צוער' && profile.role !== 'ממ"ש') && (
           <button 
             onClick={() => setActiveTab('export')}
