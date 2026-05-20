@@ -60,7 +60,7 @@ export default function App() {
       <aside className="bg-slate-900 text-white p-6 flex flex-col justify-between overflow-y-auto hidden md:flex">
         <div>
           <div className="mb-8 flex items-center gap-3">
-             <div className="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center font-bold text-xl text-white">ה</div>
+             <img src="/tikshuv.png" alt="תקשוב" className="w-10 h-10 object-contain drop-shadow-sm" />
              <h1 className="text-xl font-bold tracking-tight">ניהול השלמה</h1>
           </div>
           <nav>
@@ -120,7 +120,7 @@ export default function App() {
       {/* Mobile Nav Header */}
       <header className="md:hidden flex-none h-16 bg-slate-900 text-white shadow-md px-4 flex items-center justify-between z-40 relative shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center font-bold text-lg text-white shrink-0">ה</div>
+          <img src="/tikshuv.png" alt="תקשוב" className="w-8 h-8 object-contain shrink-0 drop-shadow-sm" />
           <div>
             <h1 className="font-bold text-sm leading-tight">ניהול השלמה</h1>
             <p className="text-xs text-slate-400 leading-tight">
