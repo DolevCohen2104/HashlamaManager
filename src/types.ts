@@ -13,6 +13,7 @@ export interface Cadet {
   phone_number: string;
   birth_date: string;
   role: string;
+  specific_role?: string;
 }
 
 export interface AttendanceLog {

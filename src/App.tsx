@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, LayoutDashboard, Users, Download, LogOut, CheckCircle2, Gift } from 'lucide-react';
+import { Shield, LayoutDashboard, Users, Download, LogOut, CheckCircle2, Gift, Network } from 'lucide-react';
 import { initAuth, logout, AppUser } from './auth';
 
 import Login from './components/Login';
@@ -7,13 +7,14 @@ import Dashboard from './components/Dashboard';
 import CadetDirectory from './components/CadetDirectory';
 import ExportData from './components/ExportData';
 import Birthdays from './components/Birthdays';
+import Roles from './components/Roles';
 
 export default function App() {
   const [profile, setProfile] = useState<AppUser | null>(null);
   const [needsAuth, setNeedsAuth] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'directory' | 'birthdays' | 'export'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'directory' | 'birthdays' | 'roles' | 'export'>('dashboard');
 
   useEffect(() => {
     const unsubscribe = initAuth(
@@ -85,6 +86,14 @@ export default function App() {
               <Gift size={20} className="ml-3 opacity-70" />
               <span>ימי הולדת</span>
             </div>
+
+            <div 
+              onClick={() => setActiveTab('roles')}
+              className={`flex items-center p-3 rounded-lg mb-2 cursor-pointer transition-colors ${activeTab === 'roles' ? 'bg-slate-700 border-r-4 border-sky-400' : 'hover:bg-slate-800'}`}
+            >
+              <Network size={20} className="ml-3 opacity-70" />
+              <span>תפקידי רוחב</span>
+            </div>
             
             {profile.role !== 'צוער' && (
               <div 
@@ -142,6 +151,12 @@ export default function App() {
         >
           <Gift size={18} /> ימי הולדת
         </button>
+        <button 
+          onClick={() => setActiveTab('roles')}
+          className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'roles' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+        >
+          <Network size={18} /> תפקידים
+        </button>
         {profile.role !== 'צוער' && (
           <button 
             onClick={() => setActiveTab('export')}
@@ -156,6 +171,7 @@ export default function App() {
         {activeTab === 'dashboard' && <Dashboard profile={profile} />}
         {activeTab === 'directory' && <CadetDirectory profile={profile} />}
         {activeTab === 'birthdays' && <Birthdays />}
+        {activeTab === 'roles' && <Roles />}
         {activeTab === 'export' && <ExportData profile={profile} />}
       </main>
     </div>
