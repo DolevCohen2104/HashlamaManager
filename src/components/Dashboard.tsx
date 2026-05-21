@@ -61,13 +61,23 @@ export default function Dashboard({ profile }: Props) {
       // Auto-open current event for Mammash / Maham
       if (profile.role !== 'צוער' && evts.length > 0 && !selectedEventId) {
         const now = new Date();
-        const currentEvent = evts.find(e => {
+        const sortedEvts = [...evts].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+        
+        const currentEvent = sortedEvts.find((e, i) => {
           if (!e.start || !e.end) return false;
           const start = new Date(e.start);
-          const end = new Date(e.end);
-          // Check if now is between start - 15 minutes and end
-          const startMinus15 = new Date(start.getTime() - 15 * 60000);
-          return now >= startMinus15 && now <= end;
+          let end = new Date(e.end);
+          
+          const nextEvent = sortedEvts[i + 1];
+          if (nextEvent && nextEvent.start) {
+            const nextStartMinus10 = new Date(new Date(nextEvent.start).getTime() - 10 * 60000);
+            if (nextStartMinus10 < end) {
+              end = nextStartMinus10;
+            }
+          }
+
+          const startMinus10 = new Date(start.getTime() - 10 * 60000);
+          return now >= startMinus10 && now <= end;
         });
 
         if (currentEvent) {
