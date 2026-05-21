@@ -1,2 +1,0 @@
--- This file was recreated to satisfy Supabase migration history requirements.
--- The RLS was disabled here, and then re-enabled and finally disabled again in subsequent migrations.
