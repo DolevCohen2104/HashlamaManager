@@ -3,7 +3,7 @@ export interface UserProfile {
   full_name: string;
   role: string;
   team_number: string | null;
-  gender?: 'male' | 'female';
+  gender?: 'זכר' | 'נקבה';
 }
 
 export interface Cadet {
@@ -15,7 +15,7 @@ export interface Cadet {
   birth_date: string;
   role: string;
   specific_role?: string;
-  gender?: 'male' | 'female';
+  gender?: 'זכר' | 'נקבה';
 }
 
 export interface AttendanceLog {

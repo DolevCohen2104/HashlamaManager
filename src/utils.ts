@@ -15,9 +15,9 @@ export const getWhatsAppLink = (phoneNumber: string): string => {
   return `https://wa.me/${cleanNumber}`;
 };
 
-export const formatRole = (role: string, gender?: 'male' | 'female'): string => {
+export const formatRole = (role: string, gender?: 'זכר' | 'נקבה'): string => {
   if (!role) return '';
-  if (gender !== 'female') return role;
+  if (gender !== 'נקבה') return role;
 
   // Exact matches
   const exactMatches: Record<string, string> = {

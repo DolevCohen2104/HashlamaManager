@@ -142,11 +142,11 @@ export default function CadetDirectory({ profile }: Props) {
             </select>
             <select
               className="px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-700"
-              value={newCadet.gender || 'male'}
-              onChange={e => setNewCadet({...newCadet, gender: e.target.value as 'male'|'female'})}
+              value={newCadet.gender || 'זכר'}
+              onChange={e => setNewCadet({...newCadet, gender: e.target.value as 'זכר'|'נקבה'})}
             >
-              <option value="male">זכר</option>
-              <option value="female">נקבה</option>
+              <option value="זכר">זכר</option>
+              <option value="נקבה">נקבה</option>
             </select>
             <input 
               placeholder="טלפון ליצירת קשר"
