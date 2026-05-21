@@ -665,7 +665,7 @@ export default function Dashboard({ profile }: Props) {
       {events.length === 0 && !error ? (
         <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
           <CalendarIcon size={48} className="mx-auto text-slate-300 mb-4" />
-          <p className="text-slate-500 font-medium">אין אירועים בלוח השנה להיום</p>
+          <p className="text-slate-500 font-medium">אין אירועים בלו"ז להיום</p>
         </div>
       ) : (
         <div className="space-y-3">
