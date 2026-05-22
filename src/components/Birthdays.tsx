@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { fetchCadets } from '../services/db';
 import type { Cadet } from '../types';
-import { Gift, Calendar as CalendarIcon, Loader2, AlertCircle } from 'lucide-react';
+import { Gift, Calendar as CalendarIcon, AlertCircle } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 
 const HEBREW_MONTHS = [
   'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
@@ -31,12 +32,7 @@ export default function Birthdays() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full animate-pulse-soft">
-        <Loader2 className="w-8 h-8 animate-spin mb-4 text-sky-500" />
-        <span className="font-medium text-lg">טוען ימי הולדת...</span>
-      </div>
-    );
+    return <LoadingSpinner text="טוען ימי הולדת..." />;
   }
 
   if (error) {
@@ -102,12 +98,11 @@ export default function Birthdays() {
           return (
             <div 
               key={monthIndex} 
-              className={`flex flex-col rounded-2xl overflow-hidden shadow-sm border-2 transition-all hover:shadow-md animate-slide-up ${
+              className={`flex flex-col rounded-2xl overflow-hidden shadow-sm border-2 transition-all hover:shadow-md ${
                 isCurrentMonth 
                   ? 'border-rose-400 bg-rose-50/30' 
                   : 'border-slate-200 bg-white'
               }`}
-              style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className={`py-3 px-4 flex items-center justify-between ${
                 isCurrentMonth ? 'bg-rose-400 text-white' : 'bg-slate-100 text-slate-700'

@@ -4,6 +4,7 @@ import type { UserProfile, CalendarEvent, Cadet, AttendanceLog } from '../types'
 import { fetchTodayEvents } from '../services/calendar';
 import { fetchCadets, fetchAttendanceForEvent, upsertAttendance } from '../services/db';
 import { getWhatsAppLink } from '../utils';
+import LoadingSpinner from './LoadingSpinner';
 
 interface Props {
   profile: UserProfile;
@@ -599,12 +600,7 @@ export default function Dashboard({ profile }: Props) {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full animate-pulse-soft">
-        <Loader2 className="w-8 h-8 animate-spin mb-4 text-sky-500" />
-        <span className="font-medium text-lg">טוען נתונים...</span>
-      </div>
-    );
+    return <LoadingSpinner text="טוען נתונים ללוח הבקרה..." />;
   }
 
   const formatTime = (isoString?: string) => {
@@ -679,11 +675,10 @@ export default function Dashboard({ profile }: Props) {
         </div>
       ) : (
         <div className="space-y-3">
-          {events.map((event, index) => (
+          {events.map((event) => (
             <div 
               key={event.id} 
-              className="bg-white border-r-4 border-sky-400 rounded-l-lg rounded-r-none mb-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-t border-b border-l border-slate-100 overflow-hidden animate-slide-up"
-              style={{ animationDelay: `${index * 50}ms` }}
+              className="bg-white border-r-4 border-sky-400 rounded-l-lg rounded-r-none mb-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-t border-b border-l border-slate-100 overflow-hidden"
             >
               <button 
                 onClick={() => !isCadet && loadEventAttendance(event.id)}

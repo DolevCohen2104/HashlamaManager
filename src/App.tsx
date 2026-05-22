@@ -8,6 +8,7 @@ import CadetDirectory from './components/CadetDirectory';
 import ExportData from './components/ExportData';
 import Birthdays from './components/Birthdays';
 import Roles from './components/Roles';
+import LoadingSpinner from './components/LoadingSpinner';
 import { formatRole } from './utils';
 
 export default function App() {
@@ -41,11 +42,7 @@ export default function App() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center animate-pulse-soft">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
-      </div>
-    );
+    return <LoadingSpinner text="בודק גישה..." />;
   }
 
   if (needsAuth || !profile) {

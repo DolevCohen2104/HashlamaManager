@@ -3,6 +3,7 @@ import { Users, Phone, Calendar, UserCheck, Plus, Trash2, ChevronDown, ChevronLe
 import type { UserProfile, Cadet } from '../types';
 import { fetchCadets, addCadet, deleteCadet } from '../services/db';
 import { getWhatsAppLink, formatRole } from '../utils';
+import LoadingSpinner from './LoadingSpinner';
 
 interface Props {
   profile: UserProfile;
@@ -57,12 +58,7 @@ export default function CadetDirectory({ profile }: Props) {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full animate-pulse-soft">
-        <Loader2 className="w-8 h-8 animate-spin mb-4 text-sky-500" />
-        <span className="font-medium text-lg">טוען נתונים...</span>
-      </div>
-    );
+    return <LoadingSpinner text="טוען ספר השלמה..." />;
   }
 
   return (
@@ -268,10 +264,9 @@ export default function CadetDirectory({ profile }: Props) {
                           <div 
                             key={cadet.cadet_id} 
                             onClick={() => setExpandedCadet(isCadetExpanded ? null : cadet.cadet_id)}
-                            className={`border transition-all duration-200 rounded-lg bg-white overflow-hidden cursor-pointer animate-slide-up ${
+                            className={`border transition-all duration-200 rounded-lg bg-white overflow-hidden cursor-pointer ${
                               isCadetExpanded ? 'border-blue-300 ring-1 ring-blue-300 shadow-md col-span-1 md:col-span-2 lg:col-span-3' : 'border-slate-200 shadow-sm hover:border-slate-300 hover:shadow hover:-translate-y-0.5'
                             }`}
-                            style={{ animationDelay: `${index * 50}ms` }}
                           >
                             <div className="p-3 flex items-center justify-between">
                               <div>
