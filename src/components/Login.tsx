@@ -34,52 +34,57 @@ export default function Login({ onLoginComplete }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 text-right animate-fade-in" dir="rtl">
-      <div className="max-w-md w-full bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700 animate-slide-up">
-        <div className="p-8 pb-6 flex flex-col items-center">
-          <div className="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-6 border border-blue-500/30 text-blue-400">
-            <Shield size={32} />
-          </div>
-          <h1 className="text-2xl font-bold text-white mb-2 text-center">השלמה טכנולוגית</h1>
-          <p className="text-slate-400 text-center mb-8">
-            מערכת ניהול לו"ז ומצבה למפקדים וסגל
-          </p>
+    <div className="min-h-screen bg-mesh flex flex-col items-center justify-center p-4 text-right animate-fade-in" dir="rtl">
+      <div className="max-w-md w-full glass-card rounded-[2rem] p-8 md:p-10 flex flex-col items-center border border-white/60 animate-slide-up shadow-2xl relative overflow-hidden">
+        {/* Decorative background glow */}
+        <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400/20 via-transparent to-transparent z-0 pointer-events-none"></div>
+        
+        <div className="w-20 h-20 bg-white/80 rounded-3xl flex items-center justify-center mb-6 shadow-sm border border-slate-100 z-10 text-sky-500 p-4">
+          <img src="/tikshuv.png" alt="תקשוב" className="w-full h-full object-contain drop-shadow-sm" />
+        </div>
+        
+        <h1 className="text-3xl font-black text-slate-800 mb-2 text-center z-10">ניהול השלמה</h1>
+        <p className="text-slate-500 text-center mb-10 z-10 font-medium">
+          מערכת חכמה לניהול לו"ז ומצבה
+        </p>
 
-          <form onSubmit={handleLogin} className="w-full flex flex-col gap-4">
+          <form onSubmit={handleLogin} className="w-full flex flex-col gap-5 z-10">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">מספר אישי</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">מספר אישי</label>
               <input
                 type="text"
                 value={personalId}
                 onChange={(e) => setPersonalId(e.target.value)}
-                placeholder="הזן מספר אישי"
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="הזן מספר אישי לזיהוי"
+                className="w-full px-5 py-4 bg-white/70 backdrop-blur-sm border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white shadow-sm transition-all text-lg font-medium tracking-wider"
                 required
               />
             </div>
             <button
               type="submit"
               disabled={isLoggingIn}
-              className="w-full mt-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white transition-all py-3 px-4 rounded-xl font-bold shadow-sm active:scale-[0.98] disabled:opacity-70 disabled:hover:bg-blue-600 disabled:active:scale-100"
+              className="w-full mt-2 flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white transition-all py-4 px-4 rounded-2xl font-bold shadow-md shadow-sky-500/20 active:scale-[0.98] disabled:opacity-70 disabled:hover:from-sky-500 disabled:active:scale-100 text-lg"
             >
               {isLoggingIn ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-6 h-6 animate-spin" />
                   מתחבר...
                 </>
-              ) : 'התחבר למערכת'}
+              ) : 'היכנס למערכת'}
             </button>
           </form>
           
           {error && (
-            <p className="mt-4 text-red-400 text-sm font-medium">{error}</p>
+            <div className="mt-6 w-full bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-xl text-sm font-medium text-center shadow-sm">
+              {error}
+            </div>
           )}
-        </div>
-        <div className="bg-slate-900/50 px-8 py-4 border-t border-slate-700">
-          <p className="text-xs text-slate-500 text-center">
-            הגישה למערכת מוגבלת לבעלי תפקידים מורשים בלבד.
-          </p>
-        </div>
+          
+          <div className="mt-8 pt-6 border-t border-slate-200/50 w-full text-center z-10">
+            <p className="text-xs text-slate-400 font-medium">
+              הגישה למערכת מוגבלת לבעלי תפקידים מורשים
+            </p>
+          </div>
       </div>
     </div>
   );

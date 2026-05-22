@@ -23,3 +23,23 @@
   from { opacity: 0; transform: translateY(-15px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@layer utilities {
+  .bg-mesh {
+    background-color: #f8fafc;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(210, 100%, 93%, 1) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(230, 100%, 95%, 1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(250, 100%, 96%, 1) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(200, 100%, 95%, 1) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+  
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.03)];
+  }
+  
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-lg border border-slate-100/80 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300;
+  }
+}

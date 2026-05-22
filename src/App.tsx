@@ -53,8 +53,8 @@ export default function App() {
   }
 
   return (
-    <div dir="rtl" className="h-[100dvh] w-full bg-[#F0F2F5] text-[#1E293B] font-sans flex flex-col md:grid md:grid-cols-[260px_1fr] overflow-hidden">
-      <aside className="bg-slate-900 text-white p-6 flex flex-col justify-between overflow-y-auto hidden md:flex">
+    <div dir="rtl" className="h-[100dvh] w-full bg-mesh text-[#1E293B] font-sans flex flex-col md:flex-row overflow-hidden relative">
+      <aside className="hidden md:flex flex-col justify-between w-[260px] m-4 mr-4 bg-slate-900/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl p-6 text-white shrink-0 z-20">
         <div>
           <div className="mb-8 flex items-center gap-3">
              <img src="/tikshuv.png" alt="תקשוב" className="w-10 h-10 object-contain drop-shadow-sm" />
@@ -104,18 +104,18 @@ export default function App() {
             )}
           </nav>
         </div>
-        <div className="bg-slate-800 p-4 rounded-xl text-center text-sm">
+        <div className="bg-slate-800/50 backdrop-blur-md border border-white/5 p-4 rounded-2xl text-center text-sm shadow-inner">
            <p className="opacity-60 mb-1">משתמש נוכחי:</p>
-           <p className="font-semibold">{profile.full_name}</p>
+           <p className="font-semibold text-sky-100">{profile.full_name}</p>
            <p className="text-xs text-slate-400">({profile.role === 'ממ"ש' && profile.team_number ? `${formatRole(profile.role, profile.gender)} צוות ${profile.team_number}` : formatRole(profile.role, profile.gender)})</p>
-           <button onClick={handleLogout} className="mt-4 flex items-center justify-center gap-2 text-red-400 hover:text-red-300 w-full transition-colors font-medium">
+           <button onClick={handleLogout} className="mt-4 flex items-center justify-center gap-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 p-2 rounded-xl w-full transition-all font-medium">
               <LogOut size={16} /> התנתק
            </button>
         </div>
       </aside>
 
       {/* Mobile Nav Header */}
-      <header className="md:hidden flex-none h-16 bg-slate-900 text-white shadow-md px-4 flex items-center justify-between z-40 relative shrink-0">
+      <header className="md:hidden flex-none h-16 bg-slate-900/95 backdrop-blur-xl text-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-b border-white/10 px-4 flex items-center justify-between z-40 relative shrink-0">
         <div className="flex items-center gap-3">
           <img src="/tikshuv.png" alt="תקשוב" className="w-8 h-8 object-contain shrink-0 drop-shadow-sm" />
           <div>
@@ -130,42 +130,42 @@ export default function App() {
       </header>
       
       {/* Mobile Tabs - Fixed at bottom */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] flex items-center pb-safe">
+      <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
         <button 
           onClick={() => setActiveTab('dashboard')}
-          className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'dashboard' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+          className={`flex-1 py-3 px-1 text-[10px] font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeTab === 'dashboard' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
         >
-          <LayoutDashboard size={18} /> לו"ז יומי
+          <LayoutDashboard size={20} className={activeTab === 'dashboard' ? 'drop-shadow-sm' : ''} /> לו"ז יומי
         </button>
         <button 
           onClick={() => setActiveTab('directory')}
-          className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'directory' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+          className={`flex-1 py-3 px-1 text-[10px] font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeTab === 'directory' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
         >
-          <Users size={18} /> ספר השלמה
+          <Users size={20} className={activeTab === 'directory' ? 'drop-shadow-sm' : ''} /> ספר השלמה
         </button>
         <button 
           onClick={() => setActiveTab('birthdays')}
-          className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'birthdays' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+          className={`flex-1 py-3 px-1 text-[10px] font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeTab === 'birthdays' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
         >
-          <Gift size={18} /> ימי הולדת
+          <Gift size={20} className={activeTab === 'birthdays' ? 'drop-shadow-sm' : ''} /> ימי הולדת
         </button>
         <button 
           onClick={() => setActiveTab('roles')}
-          className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'roles' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+          className={`flex-1 py-3 px-1 text-[10px] font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeTab === 'roles' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
         >
-          <Network size={18} /> תפקידים
+          <Network size={20} className={activeTab === 'roles' ? 'drop-shadow-sm' : ''} /> תפקידים
         </button>
         {profile.role !== 'צוער' && (
           <button 
             onClick={() => setActiveTab('export')}
-            className={`flex-1 py-3 text-xs font-medium border-b-2 flex flex-col items-center justify-center gap-1 transition-colors ${activeTab === 'export' ? 'border-sky-500 text-sky-600 bg-sky-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+            className={`flex-1 py-3 px-1 text-[10px] font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeTab === 'export' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
           >
-            <Download size={18} /> ייצוא
+            <Download size={20} className={activeTab === 'export' ? 'drop-shadow-sm' : ''} /> ייצוא
           </button>
         )}
       </nav>
 
-      <main className="flex-1 flex flex-col gap-6 p-4 md:p-8 pb-20 md:pb-12 overflow-y-auto overflow-x-hidden w-full">
+      <main className="flex-1 flex flex-col p-4 md:p-8 pb-[100px] md:pb-8 overflow-y-auto w-full z-10 relative">
         {activeTab === 'dashboard' && <Dashboard profile={profile} />}
         {activeTab === 'directory' && <CadetDirectory profile={profile} />}
         {activeTab === 'birthdays' && <Birthdays />}

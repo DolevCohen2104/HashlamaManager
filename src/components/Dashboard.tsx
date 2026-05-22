@@ -622,11 +622,11 @@ export default function Dashboard({ profile }: Props) {
         
         {!isCadet && (
           <div className="flex gap-4">
-            <div className="bg-white rounded-xl p-5 shadow-sm border-b-4 border-emerald-500 text-center min-w-[160px]">
-              <p className="text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">
+            <div className="glass-card rounded-2xl p-5 border-b-4 border-emerald-400 text-center min-w-[160px]">
+              <p className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-1">
                 {isMammash ? 'כוח אדם בצוות' : 'סך הכל מצבה בהשלמה'}
               </p>
-              <p className="text-3xl font-black text-slate-800">
+              <p className="text-3xl font-black bg-gradient-to-br from-slate-800 to-slate-600 bg-clip-text text-transparent">
                 {totalRelevantCadets}
               </p>
             </div>
@@ -678,7 +678,7 @@ export default function Dashboard({ profile }: Props) {
           {events.map((event) => (
             <div 
               key={event.id} 
-              className="bg-white border-r-4 border-sky-400 rounded-l-lg rounded-r-none mb-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-t border-b border-l border-slate-100 overflow-hidden"
+              className="glass-card border-r-4 border-sky-400 rounded-l-2xl rounded-r-none mb-4 overflow-hidden group"
             >
               <button 
                 onClick={() => !isCadet && loadEventAttendance(event.id)}
