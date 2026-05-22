@@ -600,7 +600,7 @@ export default function Dashboard({ profile }: Props) {
   };
 
   if (loading) {
-    return <LoadingSpinner text="טוען נתונים ללוח הבקרה..." />;
+    return <LoadingSpinner text='טוען לו"ז יומי...' />;
   }
 
   const formatTime = (isoString?: string) => {
