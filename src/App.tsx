@@ -165,7 +165,7 @@ export default function App() {
         )}
       </nav>
 
-      <main className="flex-1 flex flex-col p-4 md:p-8 pb-[100px] md:pb-8 overflow-y-auto w-full z-10 relative">
+      <main className="flex-1 flex flex-col p-4 md:p-8 pb-32 md:pb-8 overflow-y-auto w-full z-10 relative">
         {activeTab === 'dashboard' && <Dashboard profile={profile} />}
         {activeTab === 'directory' && <CadetDirectory profile={profile} />}
         {activeTab === 'birthdays' && <Birthdays />}

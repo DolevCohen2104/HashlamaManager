@@ -95,7 +95,7 @@ export default function ExportData({ profile }: Props) {
   }
 
   return (
-    <div className="flex flex-col h-full mx-auto w-full max-w-4xl animate-fade-in">
+    <div className="flex flex-col mx-auto w-full max-w-4xl animate-fade-in pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
