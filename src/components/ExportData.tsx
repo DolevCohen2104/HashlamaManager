@@ -95,21 +95,18 @@ export default function ExportData({ profile }: Props) {
   }
 
   return (
-    <div className="flex flex-col h-full mx-auto w-full max-w-4xl">
+    <div className="flex flex-col h-full mx-auto w-full max-w-4xl animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Download className="text-blue-500" size={28} />
+            <Download className="text-sky-500" size={28} />
             ייצוא נתונים
           </h2>
           <p className="text-slate-500 mt-1">הפקת דוחות נתונים ומצבת כוח אדם</p>
         </div>
-        <div className="h-12 w-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shadow-sm">
-          <FileSpreadsheet size={24} />
-        </div>
       </div>
 
-      <div className="bg-white border text-right border-slate-200 rounded-2xl p-6 shadow-sm">
+      <div className="glass-card text-right rounded-2xl p-6 shadow-sm">
         
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">1. בחירת אוכלוסייה</h3>
