@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Phone, Calendar, UserCheck, Plus, Trash2, ChevronDown, ChevronLeft, Search, Filter, MessageCircle } from 'lucide-react';
+import { Users, Phone, Calendar, UserCheck, Plus, Trash2, ChevronDown, ChevronLeft, Search, Filter, MessageCircle, Loader2 } from 'lucide-react';
 import type { UserProfile, Cadet } from '../types';
 import { fetchCadets, addCadet, deleteCadet } from '../services/db';
 import { getWhatsAppLink, formatRole } from '../utils';
