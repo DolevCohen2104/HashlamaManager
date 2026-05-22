@@ -620,18 +620,6 @@ export default function Dashboard({ profile }: Props) {
           </p>
         </div>
         
-        {!isCadet && (
-          <div className="flex gap-4">
-            <div className="glass-card rounded-2xl p-5 border-b-4 border-emerald-400 text-center min-w-[160px]">
-              <p className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-1">
-                {isMammash ? 'כוח אדם בצוות' : 'סך הכל מצבה בהשלמה'}
-              </p>
-              <p className="text-3xl font-black bg-gradient-to-br from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                {totalRelevantCadets}
-              </p>
-            </div>
-          </div>
-        )}
       </header>
 
       {error && (
