@@ -58,14 +58,15 @@ export default function CadetDirectory({ profile }: Props) {
 
   if (loading) {
     return (
-      <div className="flex justify-center p-12 text-slate-400">
-        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full animate-pulse-soft">
+        <Loader2 className="w-8 h-8 animate-spin mb-4 text-sky-500" />
+        <span className="font-medium text-lg">טוען נתונים...</span>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -260,16 +261,17 @@ export default function CadetDirectory({ profile }: Props) {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                      {teamCadets.map(cadet => {
+                      {teamCadets.map((cadet, index) => {
                         const isCadetExpanded = expandedCadet === cadet.cadet_id;
                         
                         return (
                           <div 
                             key={cadet.cadet_id} 
                             onClick={() => setExpandedCadet(isCadetExpanded ? null : cadet.cadet_id)}
-                            className={`border transition-all duration-200 rounded-lg bg-white overflow-hidden cursor-pointer ${
-                              isCadetExpanded ? 'border-blue-300 ring-1 ring-blue-300 shadow-md col-span-1 md:col-span-2 lg:col-span-3' : 'border-slate-200 shadow-sm hover:border-slate-300 hover:shadow'
+                            className={`border transition-all duration-200 rounded-lg bg-white overflow-hidden cursor-pointer animate-slide-up ${
+                              isCadetExpanded ? 'border-blue-300 ring-1 ring-blue-300 shadow-md col-span-1 md:col-span-2 lg:col-span-3' : 'border-slate-200 shadow-sm hover:border-slate-300 hover:shadow hover:-translate-y-0.5'
                             }`}
+                            style={{ animationDelay: `${index * 50}ms` }}
                           >
                             <div className="p-3 flex items-center justify-between">
                               <div>

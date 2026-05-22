@@ -180,7 +180,7 @@ export default function Dashboard({ profile }: Props) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-slide-down">
           {teams.map(team => {
             const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
             if (teamCadets.length === 0) return null;
@@ -467,7 +467,7 @@ export default function Dashboard({ profile }: Props) {
 
           {/* Cadet list – collapsible */}
           {isExpanded && (
-            <div className="p-3 space-y-2 border-t border-slate-100">
+            <div className="p-3 space-y-2 border-t border-slate-100 animate-slide-down">
               {relevantCadets.length === 0 ? (
                 <p className="text-sm text-slate-500">אין צוערים רשומים לצוות זה.</p>
               ) : (
@@ -600,9 +600,9 @@ export default function Dashboard({ profile }: Props) {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-slate-400">
-        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <span>טוען נתונים...</span>
+      <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full animate-pulse-soft">
+        <Loader2 className="w-8 h-8 animate-spin mb-4 text-sky-500" />
+        <span className="font-medium text-lg">טוען נתונים...</span>
       </div>
     );
   }
@@ -615,7 +615,7 @@ export default function Dashboard({ profile }: Props) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-fade-in">
       <header className="flex flex-col md:flex-row justify-between md:items-end mb-8 gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-2xl font-bold text-slate-900">לו"ז יומי - {new Date().toLocaleDateString('he-IL')}</h2>
@@ -679,8 +679,12 @@ export default function Dashboard({ profile }: Props) {
         </div>
       ) : (
         <div className="space-y-3">
-          {events.map((event) => (
-            <div key={event.id} className="bg-white border-r-4 border-sky-400 rounded-l-lg rounded-r-none mb-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-t border-b border-l border-slate-100 overflow-hidden">
+          {events.map((event, index) => (
+            <div 
+              key={event.id} 
+              className="bg-white border-r-4 border-sky-400 rounded-l-lg rounded-r-none mb-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-t border-b border-l border-slate-100 overflow-hidden animate-slide-up"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
               <button 
                 onClick={() => !isCadet && loadEventAttendance(event.id)}
                 className={`w-full text-right p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 focus:outline-none transition-colors ${!isCadet ? 'cursor-pointer hover:bg-slate-50' : 'cursor-default'}`}

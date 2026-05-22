@@ -32,9 +32,9 @@ export default function Birthdays() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full">
+      <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full animate-pulse-soft">
         <Loader2 className="w-8 h-8 animate-spin mb-4 text-sky-500" />
-        <span className="font-medium">טוען ימי הולדת...</span>
+        <span className="font-medium text-lg">טוען ימי הולדת...</span>
       </div>
     );
   }
@@ -75,7 +75,7 @@ export default function Birthdays() {
   const orderedMonthIndices = Array.from({ length: 12 }, (_, i) => (currentMonth + i) % 12);
 
   return (
-    <div className="flex flex-col h-full max-w-5xl mx-auto w-full pb-20 md:pb-0">
+    <div className="flex flex-col h-full max-w-5xl mx-auto w-full pb-20 md:pb-0 animate-fade-in">
       <header className="flex flex-col md:flex-row justify-between md:items-end mb-8 gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
@@ -89,7 +89,7 @@ export default function Birthdays() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start">
-        {orderedMonthIndices.map((monthIndex) => {
+        {orderedMonthIndices.map((monthIndex, index) => {
           const monthName = HEBREW_MONTHS[monthIndex];
           const monthData = groupedBirthdays[monthIndex];
           const isCurrentMonth = monthIndex === currentMonth;
@@ -102,11 +102,12 @@ export default function Birthdays() {
           return (
             <div 
               key={monthIndex} 
-              className={`flex flex-col rounded-2xl overflow-hidden shadow-sm border-2 transition-all hover:shadow-md ${
+              className={`flex flex-col rounded-2xl overflow-hidden shadow-sm border-2 transition-all hover:shadow-md animate-slide-up ${
                 isCurrentMonth 
                   ? 'border-rose-400 bg-rose-50/30' 
                   : 'border-slate-200 bg-white'
               }`}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className={`py-3 px-4 flex items-center justify-between ${
                 isCurrentMonth ? 'bg-rose-400 text-white' : 'bg-slate-100 text-slate-700'

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { signInWithPersonalId, AppUser } from '../auth';
-import { Shield } from 'lucide-react';
+import { Shield, Loader2 } from 'lucide-react';
 
 interface Props {
   onLoginComplete: (user: AppUser) => void;
@@ -34,8 +34,8 @@ export default function Login({ onLoginComplete }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 text-right" dir="rtl">
-      <div className="max-w-md w-full bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700">
+    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 text-right animate-fade-in" dir="rtl">
+      <div className="max-w-md w-full bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700 animate-slide-up">
         <div className="p-8 pb-6 flex flex-col items-center">
           <div className="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-6 border border-blue-500/30 text-blue-400">
             <Shield size={32} />
@@ -60,9 +60,14 @@ export default function Login({ onLoginComplete }: Props) {
             <button
               type="submit"
               disabled={isLoggingIn}
-              className="w-full mt-4 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white transition-colors py-3 px-4 rounded-xl font-bold shadow-sm"
+              className="w-full mt-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white transition-all py-3 px-4 rounded-xl font-bold shadow-sm active:scale-[0.98] disabled:opacity-70 disabled:hover:bg-blue-600 disabled:active:scale-100"
             >
-              {isLoggingIn ? 'מתחבר...' : 'התחבר למערכת'}
+              {isLoggingIn ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  מתחבר...
+                </>
+              ) : 'התחבר למערכת'}
             </button>
           </form>
           

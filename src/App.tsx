@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, LayoutDashboard, Users, Download, LogOut, CheckCircle2, Gift, Network } from 'lucide-react';
+import { Shield, LayoutDashboard, Users, Download, LogOut, CheckCircle2, Gift, Network, Loader2 } from 'lucide-react';
 import { initAuth, logout, AppUser } from './auth';
 
 import Login from './components/Login';
@@ -42,8 +42,8 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center animate-pulse-soft">
+        <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
       </div>
     );
   }

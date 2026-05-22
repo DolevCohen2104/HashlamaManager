@@ -29,7 +29,7 @@ export default function Roles() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full">
+      <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full animate-pulse-soft">
         <Loader2 className="w-8 h-8 animate-spin mb-4 text-sky-500" />
         <span className="font-medium">טוען תפקידי רוחב...</span>
       </div>
@@ -79,7 +79,7 @@ export default function Roles() {
   const sortedOtherRoles = Object.keys(groupedOtherRoles).sort();
 
   return (
-    <div className="flex flex-col h-full max-w-5xl mx-auto w-full pb-20 md:pb-0">
+    <div className="flex flex-col h-full max-w-5xl mx-auto w-full pb-20 md:pb-0 animate-fade-in">
       <header className="flex flex-col md:flex-row justify-between md:items-end mb-8 gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
@@ -113,37 +113,39 @@ export default function Roles() {
           
           {/* Maham Section */}
           {maham.length > 0 && (
-            <div className="flex flex-col items-center">
-              <div className="bg-indigo-600 text-white px-10 py-6 rounded-2xl shadow-lg border border-indigo-500 text-center relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:scale-110 transition-transform">
-                  <Star size={48} />
-                </div>
-                <h3 className="font-bold text-lg text-indigo-200 mb-2">
-                  {maham.length > 0 && maham[0].gender === 'female' ? 'מפקדת ההשלמה (מה"מית)' : 'מפקד ההשלמה (מה"מ)'}
-                </h3>
-                {maham.map(m => (
-                  <div key={m.cadet_id} className="flex flex-col items-center">
-                    <div className="text-3xl font-black mb-2">{m.full_name}</div>
-                    {m.phone_number && (
-                      <a 
-                        href={getWhatsAppLink(m.phone_number)}
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-emerald-300 bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors"
-                        title="שלח הודעת וואטסאפ"
-                      >
-                        <MessageCircle size={18} />
-                      </a>
-                    )}
+            <div className="animate-slide-up" style={{ animationDelay: '150ms' }}>
+              <div className="flex flex-col items-center">
+                <div className="bg-indigo-600 text-white px-10 py-6 rounded-2xl shadow-lg border border-indigo-500 text-center relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:scale-110 transition-transform">
+                    <Star size={48} />
                   </div>
-                ))}
+                  <h3 className="font-bold text-lg text-indigo-200 mb-2">
+                    {maham.length > 0 && maham[0].gender === 'female' ? 'מפקדת ההשלמה (מה"מית)' : 'מפקד ההשלמה (מה"מ)'}
+                  </h3>
+                  {maham.map(m => (
+                    <div key={m.cadet_id} className="flex flex-col items-center">
+                      <div className="text-3xl font-black mb-2">{m.full_name}</div>
+                      {m.phone_number && (
+                        <a 
+                          href={getWhatsAppLink(m.phone_number)}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-emerald-300 bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors"
+                          title="שלח הודעת וואטסאפ"
+                        >
+                          <MessageCircle size={18} />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
           {/* Mammashim Section */}
           {mammashim.length > 0 && (
-            <div className="bg-white/50 rounded-3xl p-6 border border-slate-200/60 shadow-sm">
+            <div className="bg-white/50 rounded-3xl p-6 border border-slate-200/60 shadow-sm animate-slide-up" style={{ animationDelay: '50ms' }}>
               <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center justify-center gap-2">
                 <Users size={22} className="text-sky-500" /> מפקדי הצוותים (ממ"שים)
               </h3>
@@ -174,7 +176,7 @@ export default function Roles() {
 
           {/* Other Roles Section */}
           {sortedOtherRoles.length > 0 && (
-            <div>
+            <div className="animate-slide-up" style={{ animationDelay: '250ms' }}>
               <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2 px-2">
                 <Briefcase size={22} className="text-rose-500" /> תפקידי רוחב מקצועיים
               </h3>
