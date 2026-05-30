@@ -9,6 +9,7 @@ interface Props {
   teamFilter?: string | null;
   onClose?: () => void;
   isManager?: boolean;
+  isViewer?: boolean;
 }
 
 const TYPE_CONFIG = {
@@ -17,7 +18,7 @@ const TYPE_CONFIG = {
   clinic: { title: 'ניהול בקשות חופ"ל / רופא', myTitle: 'סטטוס בקשות חופ"ל שלי', icon: Cross, color: 'text-rose-500', bg: 'bg-rose-50' }
 };
 
-export default function ServiceRequestsManager({ profile, filterType, teamFilter, onClose, isManager = true }: Props) {
+export default function ServiceRequestsManager({ profile, filterType, teamFilter, onClose, isManager = true, isViewer = false }: Props) {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const config = TYPE_CONFIG[filterType];
@@ -30,11 +31,11 @@ export default function ServiceRequestsManager({ profile, filterType, teamFilter
     setLoading(true);
     let data = await fetchServiceRequests(filterType);
     
-    if (isManager && teamFilter && teamFilter !== 'all') {
+    if ((isManager || isViewer) && teamFilter && teamFilter !== 'all') {
       data = data.filter(r => r.details?.team === teamFilter);
     }
 
-    if (!isManager) {
+    if (!isManager && !isViewer) {
       const cadets = await fetchCadets();
       const myCadet = cadets.find(c => c.personal_id === profile.personal_id);
       if (myCadet) {
@@ -76,9 +77,9 @@ export default function ServiceRequestsManager({ profile, filterType, teamFilter
           <config.icon size={28} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">{isManager ? config.title : config.myTitle}</h2>
+          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">{(isManager || isViewer) ? config.title : config.myTitle}</h2>
           <p className="text-slate-500 text-sm">
-            {!isManager ? 'מעקב אחר הבקשות שפתחת' : (teamFilter && teamFilter !== 'all' ? `מציג בקשות עבור צוות ${teamFilter}` : 'מציג את כלל הבקשות בהשלמה')}
+            {(!isManager && !isViewer) ? 'מעקב אחר הבקשות שפתחת' : (teamFilter && teamFilter !== 'all' ? `מציג בקשות עבור צוות ${teamFilter}` : 'מציג את כלל הבקשות בהשלמה')}
           </p>
         </div>
       </div>

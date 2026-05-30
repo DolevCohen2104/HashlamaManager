@@ -20,7 +20,10 @@ export const fetchCadets = async (): Promise<Cadet[]> => {
     handleSupabaseError(error, 'fetchCadets');
     return [];
   }
-  return data as Cadet[];
+  
+  // Filter out senior staff so they don't appear in cadet counts or tasks
+  const seniorRoles = ['מפק"צ', 'סמק"ס', 'מק"ס'];
+  return (data as Cadet[]).filter(c => !seniorRoles.includes(c.role));
 };
 
 export const addCadet = async (cadet: Omit<Cadet, 'cadet_id'>) => {
