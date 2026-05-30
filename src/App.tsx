@@ -10,6 +10,7 @@ import Birthdays from './components/Birthdays';
 import Roles from './components/Roles';
 import OmniSearch from './components/OmniSearch';
 import ServiceRequestForm from './components/ServiceRequestForm';
+import LeaveRequestForm from './components/LeaveRequestForm';
 import LoadingSpinner from './components/LoadingSpinner';
 import { formatRole } from './utils';
 
@@ -104,11 +105,18 @@ export default function App() {
         {activeTab === 'roles' && <Roles />}
         {activeTab === 'export' && <ExportData profile={profile} />}
         
-        {['maintenance', 'leave', 'clinic'].includes(activeTab) && (
+        {['maintenance', 'clinic'].includes(activeTab) && (
           <ServiceRequestForm 
             profile={profile} 
             type={activeTab as any} 
             onClose={() => setActiveTab('dashboard')} 
+          />
+        )}
+        
+        {activeTab === 'leave' && (
+          <LeaveRequestForm
+            profile={profile}
+            onClose={() => setActiveTab('dashboard')}
           />
         )}
       </main>

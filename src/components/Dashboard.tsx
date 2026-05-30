@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft, Edit3, MessageCircle, Gift, Loader2 } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft, Edit3, MessageCircle, Gift, Loader2, ListTodo } from 'lucide-react';
 import type { UserProfile, CalendarEvent, Cadet, AttendanceLog } from '../types';
 import { fetchTodayEvents } from '../services/calendar';
 import { fetchCadets, fetchAttendanceForEvent, upsertAttendance } from '../services/db';
@@ -18,6 +18,7 @@ export default function Dashboard({ profile }: Props) {
   const [error, setError] = useState<string | null>(null);
   
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<'tasks' | 'schedule'>('tasks');
   const [attendance, setAttendance] = useState<AttendanceLog[]>([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
   const [mahamEditMode, setMahamEditMode] = useState(false);
@@ -630,8 +631,13 @@ export default function Dashboard({ profile }: Props) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-        <div className="lg:col-span-2 flex flex-col h-full overflow-y-auto pr-2">
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pb-24">
+        {activeView === 'tasks' ? (
+          <div className="h-full">
+            <TaskManager profile={profile} />
+          </div>
+        ) : (
+          <div className="flex flex-col h-full pr-2">
 
       {/* Birthday Alert Banner */}
       {(() => {
@@ -711,13 +717,26 @@ export default function Dashboard({ profile }: Props) {
           ))}
         </div>
       )}
+          </div>
+        )}
       </div>
 
-      {/* Task Manager Pane */}
-      <div className="lg:col-span-1 border-t-2 lg:border-t-0 lg:border-r-2 border-slate-100 pt-6 lg:pt-0 lg:pr-6 flex flex-col h-full min-h-[400px]">
-        <TaskManager profile={profile} />
-      </div>
-    </div>
+      {profile.role !== 'צוער' && (
+        <div className="fixed bottom-4 left-4 right-4 z-40 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
+          <button 
+            onClick={() => setActiveView('tasks')}
+            className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'tasks' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
+          >
+            <ListTodo size={20} className={activeView === 'tasks' ? 'drop-shadow-sm' : ''} /> ניהול משימות
+          </button>
+          <button 
+            onClick={() => setActiveView('schedule')}
+            className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'schedule' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
+          >
+            <CalendarIcon size={20} className={activeView === 'schedule' ? 'drop-shadow-sm' : ''} /> ניהול לו"ז ומצבות
+          </button>
+        </div>
+      )}
 
       {!isMammash && !isCadet && selectedEventId && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 pt-8 pb-20">
