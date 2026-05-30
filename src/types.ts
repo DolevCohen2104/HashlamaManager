@@ -67,3 +67,19 @@ export interface ServiceRequest {
   details: any;
   created_at: string;
 }
+
+export interface RollCall {
+  id: string;
+  title: string;
+  status: 'active' | 'closed';
+  type: 'home' | 'base' | 'general';
+  created_at: string;
+}
+
+export interface RollCallResponse {
+  id: string;
+  roll_call_id: string;
+  cadet_id: string;
+  status: string;
+  responded_at: string;
+}

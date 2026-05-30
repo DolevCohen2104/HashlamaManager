@@ -205,3 +205,52 @@ export const submitServiceRequest = async (request: any) => {
     .insert(request);
   if (error) handleSupabaseError(error, 'submitServiceRequest');
 };
+
+// Roll Calls (ירוק בעיניים)
+export const fetchActiveRollCalls = async (): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from('roll_calls')
+    .select('*')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false });
+  if (error) {
+    handleSupabaseError(error, 'fetchActiveRollCalls');
+    return [];
+  }
+  return data;
+};
+
+export const createRollCall = async (title: string, type: 'general' | 'home' | 'base') => {
+  const { error } = await supabase
+    .from('roll_calls')
+    .insert({ title, type, status: 'active' });
+  if (error) handleSupabaseError(error, 'createRollCall');
+};
+
+export const closeRollCall = async (id: string) => {
+  const { error } = await supabase
+    .from('roll_calls')
+    .update({ status: 'closed' })
+    .eq('id', id);
+  if (error) handleSupabaseError(error, 'closeRollCall');
+};
+
+export const fetchRollCallResponses = async (rollCallId: string): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from('roll_call_responses')
+    .select('*')
+    .eq('roll_call_id', rollCallId);
+  if (error) {
+    handleSupabaseError(error, 'fetchRollCallResponses');
+    return [];
+  }
+  return data;
+};
+
+export const submitRollCallResponse = async (rollCallId: string, cadetId: string) => {
+  // Upsert to handle multiple clicks gracefully
+  const { error } = await supabase
+    .from('roll_call_responses')
+    .upsert({ roll_call_id: rollCallId, cadet_id, status: 'present' }, { onConflict: 'roll_call_id,cadet_id' });
+  if (error) handleSupabaseError(error, 'submitRollCallResponse');
+};

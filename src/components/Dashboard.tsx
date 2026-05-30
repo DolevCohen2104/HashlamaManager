@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft, ChevronRight, Edit3, MessageCircle, Gift, Loader2, ListTodo } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft, ChevronRight, Edit3, MessageCircle, Gift, Loader2, ListTodo, ShieldCheck } from 'lucide-react';
 import type { UserProfile, CalendarEvent, Cadet, AttendanceLog } from '../types';
 import { fetchTodayEvents } from '../services/calendar';
 import { fetchCadets, fetchAttendanceForEvent, upsertAttendance, cleanupOldAttendance } from '../services/db';
 import { getWhatsAppLink } from '../utils';
 import LoadingSpinner from './LoadingSpinner';
 import TaskManager from './TaskManager';
+import RollCallManager from './RollCallManager';
 
 interface Props {
   profile: UserProfile;
@@ -18,7 +19,7 @@ export default function Dashboard({ profile }: Props) {
   const [error, setError] = useState<string | null>(null);
   
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'tasks' | 'schedule'>(['מפק"צ', 'סמק"ס', 'מק"ס'].includes(profile.role) ? 'schedule' : 'tasks');
+  const [activeView, setActiveView] = useState<'tasks' | 'schedule' | 'mifkad'>(['מפק"צ', 'סמק"ס', 'מק"ס'].includes(profile.role) ? 'schedule' : 'tasks');
   const [attendance, setAttendance] = useState<AttendanceLog[]>([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
   const [mahamEditMode, setMahamEditMode] = useState(false);
@@ -677,7 +678,10 @@ export default function Dashboard({ profile }: Props) {
 
       <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pb-32 md:pb-8">
         {activeView === 'tasks' ? (
-          <div className="h-full">
+          <div className="h-full flex flex-col gap-6">
+            {profile.role === 'צוער' && (
+              <RollCallManager profile={profile} cadets={cadets} />
+            )}
             <TaskManager profile={profile} />
           </div>
         ) : (
@@ -747,20 +751,36 @@ export default function Dashboard({ profile }: Props) {
         )}
       </div>
 
-      {(profile.role === 'ממ"ש' || profile.role === 'מה"מ') && (
+      {activeView === 'mifkad' && (
+        <div className="mt-6 mb-24 max-w-7xl mx-auto w-full">
+          <RollCallManager profile={profile} cadets={cadets} />
+        </div>
+      )}
+
+      {(profile.role === 'מפק"צ' || profile.role === 'סמק"ס' || profile.role === 'מק"ס' || profile.role === 'ממ"ש' || profile.role === 'מה"מ') && (
         <div className="fixed bottom-4 left-4 right-4 z-40 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
-          <button 
-            onClick={() => setActiveView('tasks')}
-            className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'tasks' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
-          >
-            <ListTodo size={20} className={activeView === 'tasks' ? 'drop-shadow-sm' : ''} /> ניהול משימות
-          </button>
+          {(profile.role === 'ממ"ש' || profile.role === 'מה"מ') && (
+            <button 
+              onClick={() => setActiveView('tasks')}
+              className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'tasks' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
+            >
+              <ListTodo size={20} className={activeView === 'tasks' ? 'drop-shadow-sm' : ''} /> ניהול משימות
+            </button>
+          )}
           <button 
             onClick={() => setActiveView('schedule')}
             className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'schedule' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
           >
             <CalendarIcon size={20} className={activeView === 'schedule' ? 'drop-shadow-sm' : ''} /> ניהול לו"ז ומצבות
           </button>
+          {(profile.role === 'מפק"צ' || profile.role === 'מה"מ') && (
+            <button 
+              onClick={() => setActiveView('mifkad')}
+              className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'mifkad' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
+            >
+              <ShieldCheck size={20} className={activeView === 'mifkad' ? 'drop-shadow-sm' : ''} /> ירוק בעיניים
+            </button>
+          )}
         </div>
       )}
 
