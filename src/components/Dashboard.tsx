@@ -24,6 +24,7 @@ export default function Dashboard({ profile }: Props) {
   const normalizedRole = profile.role ? profile.role.replace(/["'״]/g, '"') : '';
   
   const [activeView, setActiveView] = useState<'tasks' | 'schedule' | 'mifkad'>(['מפק"צ', 'סמק"ס', 'מק"ס'].includes(normalizedRole) ? 'schedule' : 'tasks');
+  const [hasActiveRollCalls, setHasActiveRollCalls] = useState(false);
   const [attendance, setAttendance] = useState<AttendanceLog[]>([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
   const [mahamEditMode, setMahamEditMode] = useState(false);
@@ -59,13 +60,15 @@ export default function Dashboard({ profile }: Props) {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [evts, cdts, _] = await Promise.all([
+      const [evts, cdts, _, rollCalls] = await Promise.all([
         fetchTodayEvents(),
         fetchCadets(),
-        cleanupOldAttendance()
+        cleanupOldAttendance(),
+        fetchActiveRollCalls()
       ]);
       setEvents(evts);
       setCadets(cdts);
+      setHasActiveRollCalls(rollCalls.length > 0);
       setError(null);
 
       // Auto-open current event for Mammash / Maham
@@ -150,6 +153,16 @@ export default function Dashboard({ profile }: Props) {
     if (!selectedEventId) return;
 
     const intervalId = setInterval(async () => {
+      // Background poll for active roll calls
+      try {
+        const rollCalls = await fetchActiveRollCalls();
+        setHasActiveRollCalls(rollCalls.length > 0);
+        // If they are on mifkad tab and there's no active roll calls (and not maham), boot them out
+        if (rollCalls.length === 0 && activeView === 'mifkad' && normalizedRole !== 'מה"מ') {
+          setActiveView(normalizedRole === 'צוער' ? 'tasks' : 'schedule');
+        }
+      } catch (err) {}
+
       // Skip update if there are pending local changes (typing a reason)
       if (Object.keys(debounceTimers.current).length > 0) return;
       
@@ -684,9 +697,6 @@ export default function Dashboard({ profile }: Props) {
       <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pb-32 md:pb-8">
         {activeView === 'tasks' ? (
           <div className="h-full flex flex-col gap-6">
-            {(normalizedRole === 'צוער' || normalizedRole === 'ממ"ש') && (
-              <RollCallManager profile={{...profile, role: normalizedRole}} cadets={cadets} />
-            )}
             <TaskManager profile={profile} />
           </div>
         ) : activeView === 'schedule' ? (
@@ -762,9 +772,9 @@ export default function Dashboard({ profile }: Props) {
         </div>
       )}
 
-      {(normalizedRole === 'מפק"צ' || normalizedRole === 'סמק"ס' || normalizedRole === 'מק"ס' || normalizedRole === 'ממ"ש' || normalizedRole === 'מה"מ') && (
+      {(normalizedRole !== 'צוער' || hasActiveRollCalls) && (
         <div className="fixed bottom-4 left-4 right-4 z-40 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
-          {(normalizedRole === 'ממ"ש' || normalizedRole === 'מה"מ') && (
+          {(normalizedRole === 'צוער' || normalizedRole === 'ממ"ש' || normalizedRole === 'מה"מ') && (
             <button 
               onClick={() => setActiveView('tasks')}
               className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'tasks' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
@@ -772,13 +782,15 @@ export default function Dashboard({ profile }: Props) {
               <ListTodo size={20} className={activeView === 'tasks' ? 'drop-shadow-sm' : ''} /> ניהול משימות
             </button>
           )}
-          <button 
-            onClick={() => setActiveView('schedule')}
-            className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'schedule' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
-          >
-            <CalendarIcon size={20} className={activeView === 'schedule' ? 'drop-shadow-sm' : ''} /> ניהול לו"ז ומצבות
-          </button>
-          {(normalizedRole === 'מפק"צ' || normalizedRole === 'מה"מ' || normalizedRole === 'ממ"ש') && (
+          {normalizedRole !== 'צוער' && (
+            <button 
+              onClick={() => setActiveView('schedule')}
+              className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'schedule' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
+            >
+              <CalendarIcon size={20} className={activeView === 'schedule' ? 'drop-shadow-sm' : ''} /> ניהול לו"ז ומצבות
+            </button>
+          )}
+          {(normalizedRole === 'מה"מ' || hasActiveRollCalls) && (
             <button 
               onClick={() => setActiveView('mifkad')}
               className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'mifkad' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}

@@ -184,10 +184,10 @@ export default function RollCallManager({ profile, cadets }: Props) {
       )}
 
       {/* Active Roll Calls */}
-      <h3 className="font-black text-xl text-slate-800 mt-4 px-2">מסדרים פעילים</h3>
+      <h3 className="font-black text-xl text-slate-800 mt-4 px-2">ירוק בעיניים</h3>
       {rollCalls.length === 0 ? (
         <div className="text-center text-slate-400 p-8 bg-white/50 backdrop-blur-sm rounded-3xl border border-dashed border-slate-300">
-          אין מסדרים פעילים כרגע
+          אין מעקבי ירוק בעיניים פעילים כרגע
         </div>
       ) : (
         rollCalls.map(call => {
