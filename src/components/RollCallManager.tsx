@@ -67,10 +67,12 @@ export default function RollCallManager({ profile, cadets }: Props) {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim()) return;
     setIsCreating(true);
-    await createRollCall(newTitle.trim(), newType);
-    setNewTitle('');
+    let autoTitle = 'בדיקת נוכחות כללית';
+    if (newType === 'home') autoTitle = 'וידוא הגעה הביתה';
+    else if (newType === 'base') autoTitle = 'וידוא נוכחות בבסיס';
+    
+    await createRollCall(autoTitle, newType);
     setIsCreating(false);
     await loadRollCalls();
   };
@@ -157,15 +159,7 @@ export default function RollCallManager({ profile, cadets }: Props) {
             <ShieldCheck className="text-emerald-500" />
             פתיחת מסדר (ירוק בעיניים)
           </h2>
-          <form onSubmit={handleCreate} className="flex flex-col md:flex-row gap-3">
-            <input
-              type="text"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="שם המסדר (לדוגמה: וידוא הגעה הביתה)"
-              className="flex-[2] px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
-              required
-            />
+          <form onSubmit={handleCreate} className="flex flex-col sm:flex-row gap-3">
             <div className="flex flex-1 gap-2">
               <select
                 value={newType}
@@ -262,7 +256,7 @@ export default function RollCallManager({ profile, cadets }: Props) {
                 <div className="p-5 bg-slate-50 border-t border-slate-100 flex flex-col gap-5 animate-slide-down">
                   {isMaham ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {Array.from(teamsMap.entries()).sort((a,b) => a[0].localeCompare(b[0])).map(([team, stats]) => {
+                      {Array.from(teamsMap.entries()).sort((a,b) => String(a[0]).localeCompare(String(b[0]))).map(([team, stats]) => {
                         const teamComplete = stats.total > 0 && stats.responded === stats.total;
                         return (
                           <div key={team} className={`p-4 rounded-2xl border flex flex-col items-center justify-center text-center gap-1.5 shadow-sm transition-all ${
