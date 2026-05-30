@@ -3,7 +3,7 @@ import { Search, PenTool, CalendarOff, Cross, ArrowLeft } from 'lucide-react';
 
 const MODULES = [
   { id: 'maintenance', title: 'תקלות בינוי ותשתיות', keywords: ['תקלה', 'בינוי', 'שבור', 'תיקון', 'מזגן', 'אור'], icon: PenTool, color: 'text-orange-500', bg: 'bg-orange-50' },
-  { id: 'leave', title: 'בקשת יציאה / חופשה', keywords: ['חופש', 'יציאה', 'אפטר', 'בית', 'אישור'], icon: CalendarOff, color: 'text-indigo-500', bg: 'bg-indigo-50' },
+  { id: 'leave', title: 'בקשת יציאה', keywords: ['חופש', 'יציאה', 'אפטר', 'בית', 'אישור'], icon: CalendarOff, color: 'text-indigo-500', bg: 'bg-indigo-50' },
   { id: 'clinic', title: 'בקשת חופ"ל / רופא', keywords: ['חופל', 'רופא', 'חולה', 'מרפאה', 'פטור'], icon: Cross, color: 'text-rose-500', bg: 'bg-rose-50' },
   // Adding old tabs to search as per specs
   { id: 'directory', title: 'ספר השלמה', keywords: ['ספר', 'טלפון', 'צוערים', 'רשימה'], icon: Search, color: 'text-sky-500', bg: 'bg-sky-50' },

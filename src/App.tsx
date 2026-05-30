@@ -11,6 +11,7 @@ import Roles from './components/Roles';
 import OmniSearch from './components/OmniSearch';
 import ServiceRequestForm from './components/ServiceRequestForm';
 import LeaveRequestForm from './components/LeaveRequestForm';
+import MaintenanceRequestForm from './components/MaintenanceRequestForm';
 import LoadingSpinner from './components/LoadingSpinner';
 import { formatRole } from './utils';
 
@@ -105,11 +106,18 @@ export default function App() {
         {activeTab === 'roles' && <Roles />}
         {activeTab === 'export' && <ExportData profile={profile} />}
         
-        {['maintenance', 'clinic'].includes(activeTab) && (
+        {activeTab === 'clinic' && (
           <ServiceRequestForm 
             profile={profile} 
-            type={activeTab as any} 
+            type={'clinic' as any} 
             onClose={() => setActiveTab('dashboard')} 
+          />
+        )}
+        
+        {activeTab === 'maintenance' && (
+          <MaintenanceRequestForm
+            profile={profile}
+            onClose={() => setActiveTab('dashboard')}
           />
         )}
         

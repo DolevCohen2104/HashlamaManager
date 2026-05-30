@@ -614,15 +614,7 @@ export default function Dashboard({ profile }: Props) {
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
-      <header className="flex flex-col md:flex-row justify-between md:items-end mb-8 gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-2xl font-bold text-slate-900">לו"ז יומי - {new Date().toLocaleDateString('he-IL')}</h2>
-          <p className="text-slate-500">
-            {events.length} אירועים היום מתוך Google Calendar
-          </p>
-        </div>
-        
-      </header>
+
 
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
@@ -630,14 +622,6 @@ export default function Dashboard({ profile }: Props) {
           {error}
         </div>
       )}
-
-      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pb-24">
-        {activeView === 'tasks' ? (
-          <div className="h-full">
-            <TaskManager profile={profile} />
-          </div>
-        ) : (
-          <div className="flex flex-col h-full pr-2">
 
       {/* Birthday Alert Banner */}
       {(() => {
@@ -654,8 +638,8 @@ export default function Dashboard({ profile }: Props) {
               <div className="flex items-center gap-3">
                 <Gift size={28} className="animate-bounce" />
                 <div>
-                  <h3 className="font-bold text-lg leading-none mb-1">מזל טוב לחוגגים היום! 🎉</h3>
-                  <p className="text-white/90 text-sm">
+                  <h3 className="font-bold text-lg leading-tight">מזל טוב! יש היום יום הולדת 🎉</h3>
+                  <p className="text-sm opacity-90">
                     {birthdaysToday.map(c => `${c.full_name} (צוות ${c.team_number})`).join(', ')}
                   </p>
                 </div>
@@ -665,6 +649,22 @@ export default function Dashboard({ profile }: Props) {
         }
         return null;
       })()}
+
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pb-24">
+        {activeView === 'tasks' ? (
+          <div className="h-full">
+            <TaskManager profile={profile} />
+          </div>
+        ) : (
+          <div className="flex flex-col h-full pr-2">
+            <header className="flex flex-col md:flex-row justify-between md:items-end mb-8 gap-4">
+              <div className="flex flex-col gap-1">
+                <h2 className="text-2xl font-bold text-slate-900">לו"ז יומי - {new Date().toLocaleDateString('he-IL')}</h2>
+                <p className="text-slate-500">
+                  {events.length} אירועים היום מתוך Google Calendar
+                </p>
+              </div>
+            </header>
 
       {events.length === 0 && !error ? (
         <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
@@ -721,7 +721,7 @@ export default function Dashboard({ profile }: Props) {
         )}
       </div>
 
-      {profile.role !== 'צוער' && (
+      {(profile.role === 'ממ"ש' || profile.role === 'מה"מ') && (
         <div className="fixed bottom-4 left-4 right-4 z-40 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
           <button 
             onClick={() => setActiveView('tasks')}
