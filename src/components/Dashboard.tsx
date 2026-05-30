@@ -694,6 +694,13 @@ export default function Dashboard({ profile }: Props) {
         return null;
       })()}
 
+      {/* Global Roll Call Banner for non-managers (Cadets, Mefaktzim, etc.) */}
+      {normalizedRole !== 'ממ"ש' && normalizedRole !== 'מה"מ' && hasActiveRollCalls && (
+        <div className="mb-6 animate-fade-in">
+          <RollCallManager profile={{...profile, role: normalizedRole}} cadets={cadets} />
+        </div>
+      )}
+
       <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pb-32 md:pb-8">
         {activeView === 'tasks' ? (
           <div className="h-full flex flex-col gap-6">
@@ -767,14 +774,14 @@ export default function Dashboard({ profile }: Props) {
       </div>
 
       {activeView === 'mifkad' && (
-        <div className="mt-6 mb-24 max-w-7xl mx-auto w-full">
+        <div className="mt-6 mb-24 max-w-7xl mx-auto w-full animate-fade-in">
           <RollCallManager profile={{...profile, role: normalizedRole}} cadets={cadets} />
         </div>
       )}
 
-      {(normalizedRole !== 'צוער' || hasActiveRollCalls) && (
+      {(normalizedRole === 'מפק"צ' || normalizedRole === 'סמק"ס' || normalizedRole === 'מק"ס' || normalizedRole === 'ממ"ש' || normalizedRole === 'מה"מ') && (
         <div className="fixed bottom-4 left-4 right-4 z-40 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
-          {(normalizedRole === 'צוער' || normalizedRole === 'ממ"ש' || normalizedRole === 'מה"מ') && (
+          {(normalizedRole === 'ממ"ש' || normalizedRole === 'מה"מ') && (
             <button 
               onClick={() => setActiveView('tasks')}
               className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'tasks' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
@@ -782,15 +789,13 @@ export default function Dashboard({ profile }: Props) {
               <ListTodo size={20} className={activeView === 'tasks' ? 'drop-shadow-sm' : ''} /> ניהול משימות
             </button>
           )}
-          {normalizedRole !== 'צוער' && (
-            <button 
-              onClick={() => setActiveView('schedule')}
-              className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'schedule' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
-            >
-              <CalendarIcon size={20} className={activeView === 'schedule' ? 'drop-shadow-sm' : ''} /> ניהול לו"ז ומצבות
-            </button>
-          )}
-          {(normalizedRole === 'מה"מ' || hasActiveRollCalls) && (
+          <button 
+            onClick={() => setActiveView('schedule')}
+            className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'schedule' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
+          >
+            <CalendarIcon size={20} className={activeView === 'schedule' ? 'drop-shadow-sm' : ''} /> ניהול לו"ז ומצבות
+          </button>
+          {(normalizedRole === 'מה"מ' || normalizedRole === 'ממ"ש') && (
             <button 
               onClick={() => setActiveView('mifkad')}
               className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'mifkad' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
