@@ -107,6 +107,14 @@ export const completeTask = async (taskId: string, cadetId: string) => {
   if (error) handleSupabaseError(error, 'completeTask');
 };
 
+export const uncompleteTask = async (taskId: string, cadetId: string) => {
+  const { error } = await supabase
+    .from('task_completions')
+    .delete()
+    .match({ task_id: taskId, cadet_id: cadetId });
+  if (error) handleSupabaseError(error, 'uncompleteTask');
+};
+
 export const createTask = async (task: any) => {
   const { error } = await supabase
     .from('tasks')
