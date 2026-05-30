@@ -765,8 +765,8 @@ export default function Dashboard({ profile }: Props) {
       )}
 
       {!isMammash && !isCadet && selectedEventId && (
-        <div className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center p-4 sm:p-6 ${mahamEditMode ? 'items-start pt-24 md:pt-16' : 'items-center'}`}>
-          <div className={`bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col ${mahamEditMode ? 'max-h-[85vh]' : 'max-h-[90vh]'}`}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center p-4 sm:p-6">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center gap-3 shrink-0">
               <div className="flex items-center gap-2">
                 {mahamEditMode && editingTeam && (
