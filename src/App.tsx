@@ -9,10 +9,7 @@ import ExportData from './components/ExportData';
 import Birthdays from './components/Birthdays';
 import Roles from './components/Roles';
 import OmniSearch from './components/OmniSearch';
-import ServiceRequestForm from './components/ServiceRequestForm';
-import LeaveRequestForm from './components/LeaveRequestForm';
-import MaintenanceRequestForm from './components/MaintenanceRequestForm';
-import ServiceRequestsManager from './components/ServiceRequestsManager';
+import ServiceRequestModule from './components/ServiceRequestModule';
 import LoadingSpinner from './components/LoadingSpinner';
 import { formatRole } from './utils';
 
@@ -107,35 +104,11 @@ export default function App() {
         {activeTab === 'roles' && <Roles />}
         {activeTab === 'export' && <ExportData profile={profile} />}
         
-        {activeTab === 'clinic' && (
-          <ServiceRequestForm 
+        {['clinic', 'maintenance', 'leave'].includes(activeTab) && (
+          <ServiceRequestModule 
             profile={profile} 
-            type={'clinic' as any} 
+            type={activeTab as 'clinic' | 'maintenance' | 'leave'} 
             onClose={() => setActiveTab('dashboard')} 
-          />
-        )}
-        
-        {activeTab === 'maintenance' && (
-          <MaintenanceRequestForm
-            profile={profile}
-            onClose={() => setActiveTab('dashboard')}
-          />
-        )}
-        
-        {activeTab === 'leave' && (
-          <LeaveRequestForm
-            profile={profile}
-            onClose={() => setActiveTab('dashboard')}
-          />
-        )}
-
-        {/* Management Screens */}
-        {['manage_maintenance', 'manage_clinic', 'manage_leave'].includes(activeTab) && (
-          <ServiceRequestsManager
-            profile={profile}
-            filterType={activeTab.replace('manage_', '') as any}
-            teamFilter={activeTab === 'manage_leave' && profile.role !== 'מה"מ' ? profile.team_number : 'all'}
-            onClose={() => setActiveTab('dashboard')}
           />
         )}
       </main>

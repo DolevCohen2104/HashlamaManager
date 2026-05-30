@@ -9,11 +9,7 @@ const MODULES = [
   { id: 'directory', title: 'ספר השלמה', keywords: ['ספר', 'טלפון', 'צוערים', 'רשימה'], icon: Search, color: 'text-sky-500', bg: 'bg-sky-50' },
   { id: 'roles', title: 'תפקידי רוחב', keywords: ['תפקידים', 'רוחב', 'צוות'], icon: Search, color: 'text-emerald-500', bg: 'bg-emerald-50' },
   { id: 'birthdays', title: 'ימי הולדת', keywords: ['יום הולדת', 'מזל טוב'], icon: Search, color: 'text-pink-500', bg: 'bg-pink-50' },
-  { id: 'export', title: 'ייצוא נתונים', keywords: ['ייצוא', 'דוח', 'אקסל'], icon: Search, color: 'text-blue-500', bg: 'bg-blue-50', minRole: 'mammash' },
-  // Management screens
-  { id: 'manage_maintenance', title: 'ניהול תקלות בינוי', keywords: ['ניהול', 'תקלות', 'קלג'], icon: PenTool, color: 'text-orange-600', bg: 'bg-orange-100', restrict: 'kalag' },
-  { id: 'manage_clinic', title: 'ניהול בקשות חופ"ל', keywords: ['ניהול', 'חופל', 'קמבץ'], icon: Cross, color: 'text-rose-600', bg: 'bg-rose-100', restrict: 'kambatz' },
-  { id: 'manage_leave', title: 'ניהול בקשות יציאה', keywords: ['ניהול', 'יציאה', 'חופשה', 'אפטר'], icon: CalendarOff, color: 'text-indigo-600', bg: 'bg-indigo-100', restrict: 'mammash' }
+  { id: 'export', title: 'ייצוא נתונים', keywords: ['ייצוא', 'דוח', 'אקסל'], icon: Search, color: 'text-blue-500', bg: 'bg-blue-50', minRole: 'mammash' }
 ];
 
 interface Props {
@@ -30,10 +26,6 @@ export default function OmniSearch({ onSelect, userRole, specificRole }: Props) 
   // Filter modules based on query and role
   const filteredModules = MODULES.filter(m => {
     if (m.minRole === 'mammash' && userRole === 'צוער') return false;
-    
-    if (m.restrict === 'kalag' && userRole !== 'מה"מ' && specificRole !== 'קל"ג') return false;
-    if (m.restrict === 'kambatz' && userRole !== 'מה"מ' && specificRole !== 'קמב"צ') return false;
-    if (m.restrict === 'mammash' && userRole !== 'מה"מ' && userRole !== 'ממ"ש') return false;
 
     if (!query) return true; // Show all when focused and empty, or we can show top ones
     

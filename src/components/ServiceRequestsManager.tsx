@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchServiceRequests, updateServiceRequestStatus } from '../services/db';
+import { fetchServiceRequests, updateServiceRequestStatus, fetchCadets } from '../services/db';
 import type { UserProfile, ServiceRequest } from '../types';
 import { ArrowRight, CheckCircle, Clock, XCircle, PenTool, CalendarOff, Cross } from 'lucide-react';
 
@@ -7,31 +7,41 @@ interface Props {
   profile: UserProfile;
   filterType: 'maintenance' | 'clinic' | 'leave';
   teamFilter?: string | null;
-  onClose: () => void;
+  onClose?: () => void;
+  isManager?: boolean;
 }
 
 const TYPE_CONFIG = {
-  maintenance: { title: 'ניהול תקלות בינוי ותשתיות', icon: PenTool, color: 'text-orange-500', bg: 'bg-orange-50' },
-  leave: { title: 'ניהול בקשות יציאה', icon: CalendarOff, color: 'text-indigo-500', bg: 'bg-indigo-50' },
-  clinic: { title: 'ניהול בקשות חופ"ל / רופא', icon: Cross, color: 'text-rose-500', bg: 'bg-rose-50' }
+  maintenance: { title: 'ניהול תקלות בינוי ותשתיות', myTitle: 'סטטוס תקלות שדיווחתי', icon: PenTool, color: 'text-orange-500', bg: 'bg-orange-50' },
+  leave: { title: 'ניהול בקשות יציאה', myTitle: 'סטטוס בקשות היציאה שלי', icon: CalendarOff, color: 'text-indigo-500', bg: 'bg-indigo-50' },
+  clinic: { title: 'ניהול בקשות חופ"ל / רופא', myTitle: 'סטטוס בקשות חופ"ל שלי', icon: Cross, color: 'text-rose-500', bg: 'bg-rose-50' }
 };
 
-export default function ServiceRequestsManager({ profile, filterType, teamFilter, onClose }: Props) {
+export default function ServiceRequestsManager({ profile, filterType, teamFilter, onClose, isManager = true }: Props) {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const config = TYPE_CONFIG[filterType];
 
   useEffect(() => {
     loadRequests();
-  }, [filterType, teamFilter]);
+  }, [filterType, teamFilter, isManager]);
 
   const loadRequests = async () => {
     setLoading(true);
     let data = await fetchServiceRequests(filterType);
     
-    // Client-side filtering by team if required (e.g., Mammash looking at leave requests)
-    if (teamFilter && teamFilter !== 'all') {
+    if (isManager && teamFilter && teamFilter !== 'all') {
       data = data.filter(r => r.details?.team === teamFilter);
+    }
+
+    if (!isManager) {
+      const cadets = await fetchCadets();
+      const myCadet = cadets.find(c => c.personal_id === profile.personal_id);
+      if (myCadet) {
+        data = data.filter(r => r.requester_id === myCadet.cadet_id);
+      } else {
+        data = [];
+      }
     }
     
     setRequests(data);
@@ -39,7 +49,6 @@ export default function ServiceRequestsManager({ profile, filterType, teamFilter
   };
 
   const handleUpdateStatus = async (id: string, status: string) => {
-    // Optimistic update
     setRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r));
     await updateServiceRequestStatus(id, status);
   };
@@ -56,18 +65,20 @@ export default function ServiceRequestsManager({ profile, filterType, teamFilter
 
   return (
     <div className="max-w-4xl mx-auto animate-slide-up pb-12">
-      <button onClick={onClose} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors">
-        <ArrowRight size={18} /> חזור לדף הבית
-      </button>
+      {onClose && (
+        <button onClick={onClose} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors">
+          <ArrowRight size={18} /> חזור לדף הבית
+        </button>
+      )}
 
       <div className="flex items-center gap-4 mb-8">
         <div className={`w-14 h-14 ${config.bg} ${config.color} rounded-2xl flex items-center justify-center shadow-sm border border-white/50`}>
           <config.icon size={28} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">{config.title}</h2>
+          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">{isManager ? config.title : config.myTitle}</h2>
           <p className="text-slate-500 text-sm">
-            {teamFilter && teamFilter !== 'all' ? `מציג בקשות עבור צוות ${teamFilter}` : 'מציג את כלל הבקשות בהשלמה'}
+            {!isManager ? 'מעקב אחר הבקשות שפתחת' : (teamFilter && teamFilter !== 'all' ? `מציג בקשות עבור צוות ${teamFilter}` : 'מציג את כלל הבקשות בהשלמה')}
           </p>
         </div>
       </div>
@@ -94,27 +105,28 @@ export default function ServiceRequestsManager({ profile, filterType, teamFilter
                   </p>
                 </div>
                 
-                <div className="flex flex-wrap gap-2 shrink-0">
-                  {req.status === 'pending' && (
-                    <button onClick={() => handleUpdateStatus(req.id, 'in_progress')} className="bg-sky-50 text-sky-600 hover:bg-sky-100 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
-                      העבר לטיפול
-                    </button>
-                  )}
-                  {req.status !== 'approved' && (
-                    <button onClick={() => handleUpdateStatus(req.id, 'approved')} className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
-                      אשר / סמן כטופל
-                    </button>
-                  )}
-                  {req.status !== 'rejected' && (
-                    <button onClick={() => handleUpdateStatus(req.id, 'rejected')} className="bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
-                      דחה / בטל
-                    </button>
-                  )}
-                </div>
+                {isManager && (
+                  <div className="flex flex-wrap gap-2 shrink-0">
+                    {req.status === 'pending' && (
+                      <button onClick={() => handleUpdateStatus(req.id, 'in_progress')} className="bg-sky-50 text-sky-600 hover:bg-sky-100 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                        העבר לטיפול
+                      </button>
+                    )}
+                    {req.status !== 'approved' && (
+                      <button onClick={() => handleUpdateStatus(req.id, 'approved')} className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                        אשר / סמן כטופל
+                      </button>
+                    )}
+                    {req.status !== 'rejected' && (
+                      <button onClick={() => handleUpdateStatus(req.id, 'rejected')} className="bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                        דחה / בטל
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="bg-slate-50 p-4 rounded-xl text-sm text-slate-700 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                {/* Dynamic details rendering */}
                 {Object.entries(req.details || {}).map(([key, value]) => {
                   if (['title', 'name', 'team', 'requestDate', 'isExceptional', 'image'].includes(key)) return null;
                   
