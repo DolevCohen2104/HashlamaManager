@@ -50,9 +50,6 @@ export default function ServiceRequestForm({ profile, type, onClose }: Props) {
 
   return (
     <div className="max-w-xl mx-auto animate-slide-up">
-      <button onClick={onClose} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors">
-        <ArrowRight size={18} /> חזור לדף הבית
-      </button>
 
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex items-center gap-4 mb-8">

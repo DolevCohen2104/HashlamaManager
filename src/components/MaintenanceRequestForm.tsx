@@ -94,9 +94,6 @@ export default function MaintenanceRequestForm({ profile, onClose }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto animate-slide-up pb-12">
-      <button onClick={onClose} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors">
-        <ArrowRight size={18} /> חזור לדף הבית
-      </button>
 
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex items-center gap-4 mb-8">
