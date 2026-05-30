@@ -614,6 +614,8 @@ export default function Dashboard({ profile }: Props) {
                 </div>
               );
             }))}
+            {/* Extra space at the end so the last expanded event clears the floating navbar */}
+            <div className="h-12 w-full shrink-0"></div>
           </div>
           )}
         </div>
@@ -670,7 +672,7 @@ export default function Dashboard({ profile }: Props) {
         return null;
       })()}
 
-      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pb-24">
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pb-32 md:pb-8">
         {activeView === 'tasks' ? (
           <div className="h-full">
             <TaskManager profile={profile} />
@@ -735,6 +737,7 @@ export default function Dashboard({ profile }: Props) {
               )}
             </div>
           ))}
+          <div className="h-16 w-full shrink-0"></div>
         </div>
       )}
           </div>
@@ -759,8 +762,8 @@ export default function Dashboard({ profile }: Props) {
       )}
 
       {!isMammash && !isCadet && selectedEventId && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-10 md:pt-16">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center gap-3 shrink-0">
               <h3 className="font-bold text-lg text-slate-800 truncate">
                 מצבת נוכחות – {events.find(e => e.id === selectedEventId)?.summary}
