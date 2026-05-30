@@ -18,7 +18,7 @@ export default function Dashboard({ profile }: Props) {
   const [error, setError] = useState<string | null>(null);
   
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'tasks' | 'schedule'>('tasks');
+  const [activeView, setActiveView] = useState<'tasks' | 'schedule'>(['מפק"צ', 'סמק"ס', 'מק"ס'].includes(profile.role) ? 'schedule' : 'tasks');
   const [attendance, setAttendance] = useState<AttendanceLog[]>([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
   const [mahamEditMode, setMahamEditMode] = useState(false);
@@ -746,17 +746,19 @@ export default function Dashboard({ profile }: Props) {
                 מצבת נוכחות – {events.find(e => e.id === selectedEventId)?.summary}
               </h3>
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => setMahamEditMode(m => !m)}
-                  className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
-                    mahamEditMode
-                      ? 'bg-sky-600 text-white'
-                      : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                  }`}
-                >
-                  <Edit3 size={13} />
-                  {mahamEditMode ? 'צפייה' : 'עריכה'}
-                </button>
+                {!['מפק"צ', 'סמק"ס', 'מק"ס'].includes(profile.role) && (
+                  <button
+                    onClick={() => setMahamEditMode(m => !m)}
+                    className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
+                      mahamEditMode
+                        ? 'bg-sky-600 text-white'
+                        : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                    }`}
+                  >
+                    <Edit3 size={13} />
+                    {mahamEditMode ? 'צפייה' : 'עריכה'}
+                  </button>
+                )}
                 <button 
                   onClick={() => { setSelectedEventId(null); setMahamEditMode(false); }}
                   className="text-slate-400 hover:bg-slate-200 hover:text-slate-700 rounded-lg transition-colors p-1"
