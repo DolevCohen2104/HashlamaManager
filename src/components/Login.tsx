@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { checkUserStatus, loginWithPin, setPinCode, registerLocalBiometric, verifyLocalBiometric, hasBiometricEnabled, AppUser } from '../auth';
-import { Fingerprint, Loader2, KeyRound, ChevronRight, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { checkUserStatus, loginWithPin, setPinCode, AppUser } from '../auth';
+import { Loader2, KeyRound, ChevronRight, Lock } from 'lucide-react';
 
 interface Props {
   onLoginComplete: (user: AppUser) => void;
 }
 
-type LoginStep = 'personal_id' | 'enter_pin' | 'set_pin' | 'biometric_prompt';
+type LoginStep = 'personal_id' | 'enter_pin' | 'set_pin';
 
 export default function Login({ onLoginComplete }: Props) {
   const [step, setStep] = useState<LoginStep>('personal_id');
@@ -14,14 +14,6 @@ export default function Login({ onLoginComplete }: Props) {
   const [pinCode, setPinCodeValue] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [biometricSupported, setBiometricSupported] = useState(false);
-
-  useEffect(() => {
-    if (window.PublicKeyCredential) {
-      setBiometricSupported(true);
-    }
-  }, []);
 
   const handleIdSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,16 +34,6 @@ export default function Login({ onLoginComplete }: Props) {
       }
 
       if (hasPin) {
-        // Try biometric first if enabled
-        if (hasBiometricEnabled(personalId) && biometricSupported) {
-          const success = await verifyLocalBiometric(personalId);
-          if (success) {
-            const user = await loginWithPin(personalId, undefined, true);
-            onLoginComplete(user);
-            return;
-          }
-          // If biometric fails or user cancels, fallback to PIN
-        }
         setStep('enter_pin');
       } else {
         setStep('set_pin');
@@ -76,18 +58,9 @@ export default function Login({ onLoginComplete }: Props) {
     try {
       if (step === 'set_pin') {
         await setPinCode(personalId, pinCode);
-        if (biometricSupported && !hasBiometricEnabled(personalId)) {
-          setStep('biometric_prompt');
-          setIsProcessing(false);
-          return;
-        }
-        // If no biometric supported, login directly
-        const user = await loginWithPin(personalId, pinCode);
-        onLoginComplete(user);
-      } else {
-        const user = await loginWithPin(personalId, pinCode);
-        onLoginComplete(user);
       }
+      const user = await loginWithPin(personalId, pinCode);
+      onLoginComplete(user);
     } catch (err: any) {
       setError(err.message || 'קוד סודי שגוי או שגיאה בשרת');
       setPinCodeValue(''); // clear on error
@@ -96,28 +69,12 @@ export default function Login({ onLoginComplete }: Props) {
     }
   };
 
-  const handleRegisterBiometric = async (accept: boolean) => {
-    setIsProcessing(true);
-    try {
-      if (accept) {
-        await registerLocalBiometric(personalId);
-      }
-      const user = await loginWithPin(personalId, pinCode); // using the pin they just set
-      onLoginComplete(user);
-    } catch (err) {
-      console.error(err);
-      // Fallback to login even if biometric setup fails
-      const user = await loginWithPin(personalId, pinCode);
-      onLoginComplete(user);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-mesh flex flex-col items-center justify-center p-4 text-right animate-fade-in" dir="rtl">
       <div className="max-w-md w-full glass-card rounded-[2rem] p-8 md:p-10 flex flex-col items-center border border-white/60 animate-slide-up shadow-2xl relative overflow-hidden">
         <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400/20 via-transparent to-transparent z-0 pointer-events-none"></div>
         
-        {step !== 'personal_id' && step !== 'biometric_prompt' && (
+        {step !== 'personal_id' && (
           <button 
             onClick={() => { setStep('personal_id'); setPinCodeValue(''); setError(null); }}
             className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 z-20 p-2 rounded-full hover:bg-slate-100 transition-colors"
@@ -188,52 +145,7 @@ export default function Login({ onLoginComplete }: Props) {
             >
               {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : (step === 'set_pin' ? 'שמור קוד והמשך' : 'היכנס')}
             </button>
-            
-            {step === 'enter_pin' && biometricSupported && hasBiometricEnabled(personalId) && (
-              <button
-                type="button"
-                onClick={async () => {
-                  const success = await verifyLocalBiometric(personalId);
-                  if (success) {
-                    const user = await loginWithPin(personalId, undefined, true);
-                    onLoginComplete(user);
-                  }
-                }}
-                className="flex items-center justify-center gap-2 text-sky-600 hover:text-sky-700 font-bold p-3 bg-sky-50 rounded-xl transition-colors mt-2"
-              >
-                <Fingerprint size={20} />
-                כניסה ביומטרית (Face ID / טביעת אצבע)
-              </button>
-            )}
           </form>
-        )}
-
-        {step === 'biometric_prompt' && (
-          <div className="w-full flex flex-col gap-5 z-10 mt-4 animate-fade-in text-center">
-            <div className="mx-auto w-20 h-20 bg-sky-50 rounded-full flex items-center justify-center text-sky-500 mb-2">
-              <Fingerprint size={40} />
-            </div>
-            <h2 className="text-xl font-bold text-slate-800">כניסה מהירה וקלה!</h2>
-            <p className="text-sm text-slate-600">
-              רוצה להתחבר בפעמים הבאות בקלות בעזרת טביעת אצבע או זיהוי פנים (Face ID)?
-            </p>
-            <div className="flex flex-col gap-3 mt-4">
-              <button
-                onClick={() => handleRegisterBiometric(true)}
-                disabled={isProcessing}
-                className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white transition-all py-4 px-4 rounded-2xl font-bold active:scale-[0.98] text-lg"
-              >
-                {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : 'כן, הפעל זיהוי ביומטרי'}
-              </button>
-              <button
-                onClick={() => handleRegisterBiometric(false)}
-                disabled={isProcessing}
-                className="w-full flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors py-3 px-4 font-bold"
-              >
-                לא תודה, אמשיך עם קוד סודי
-              </button>
-            </div>
-          </div>
         )}
         
         {error && (
