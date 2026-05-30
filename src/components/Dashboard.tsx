@@ -19,7 +19,11 @@ export default function Dashboard({ profile }: Props) {
   const [error, setError] = useState<string | null>(null);
   
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'tasks' | 'schedule' | 'mifkad'>(['מפק"צ', 'סמק"ס', 'מק"ס'].includes(profile.role) ? 'schedule' : 'tasks');
+  
+  // Normalize role to handle different quote types (e.g., ממ"ש vs ממ״ש vs ממ''ש)
+  const normalizedRole = profile.role ? profile.role.replace(/["'״]/g, '"') : '';
+  
+  const [activeView, setActiveView] = useState<'tasks' | 'schedule' | 'mifkad'>(['מפק"צ', 'סמק"ס', 'מק"ס'].includes(normalizedRole) ? 'schedule' : 'tasks');
   const [attendance, setAttendance] = useState<AttendanceLog[]>([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
   const [mahamEditMode, setMahamEditMode] = useState(false);
@@ -65,7 +69,7 @@ export default function Dashboard({ profile }: Props) {
       setError(null);
 
       // Auto-open current event for Mammash / Maham
-      if (profile.role !== 'צוער' && evts.length > 0 && !selectedEventId) {
+      if (normalizedRole !== 'צוער' && evts.length > 0 && !selectedEventId) {
         const now = new Date();
         const sortedEvts = [...evts].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
         
@@ -90,7 +94,7 @@ export default function Dashboard({ profile }: Props) {
           setSelectedEventId(currentEvent.id);
           
           // Auto-expand the inner accordion lists
-          if (profile.role === 'ממ"ש') {
+          if (normalizedRole === 'ממ"ש') {
             setExpandedTeams(new Set([`mammash-${profile.team_number}`]));
           } else {
             // For Maham, maybe expand all or leave collapsed? Let's expand all
@@ -160,8 +164,9 @@ export default function Dashboard({ profile }: Props) {
     return () => clearInterval(intervalId);
   }, [selectedEventId]);
 
-  const isMammash = profile.role === 'ממ"ש';
-  const isCadet = profile.role === 'צוער';
+  const isMammash = normalizedRole === 'ממ"ש';
+  const isCadet = normalizedRole === 'צוער';
+  const isMaham = normalizedRole === 'מה"מ';
   
   const relevantCadets = isMammash 
     ? cadets.filter(c => c.team_number?.toString() === profile.team_number?.toString())
@@ -679,8 +684,8 @@ export default function Dashboard({ profile }: Props) {
       <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pb-32 md:pb-8">
         {activeView === 'tasks' ? (
           <div className="h-full flex flex-col gap-6">
-            {(profile.role === 'צוער' || profile.role === 'ממ"ש') && (
-              <RollCallManager profile={profile} cadets={cadets} />
+            {(normalizedRole === 'צוער' || normalizedRole === 'ממ"ש') && (
+              <RollCallManager profile={{...profile, role: normalizedRole}} cadets={cadets} />
             )}
             <TaskManager profile={profile} />
           </div>
@@ -753,13 +758,13 @@ export default function Dashboard({ profile }: Props) {
 
       {activeView === 'mifkad' && (
         <div className="mt-6 mb-24 max-w-7xl mx-auto w-full">
-          <RollCallManager profile={profile} cadets={cadets} />
+          <RollCallManager profile={{...profile, role: normalizedRole}} cadets={cadets} />
         </div>
       )}
 
-      {(profile.role === 'מפק"צ' || profile.role === 'סמק"ס' || profile.role === 'מק"ס' || profile.role === 'ממ"ש' || profile.role === 'מה"מ') && (
+      {(normalizedRole === 'מפק"צ' || normalizedRole === 'סמק"ס' || normalizedRole === 'מק"ס' || normalizedRole === 'ממ"ש' || normalizedRole === 'מה"מ') && (
         <div className="fixed bottom-4 left-4 right-4 z-40 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
-          {(profile.role === 'ממ"ש' || profile.role === 'מה"מ') && (
+          {(normalizedRole === 'ממ"ש' || normalizedRole === 'מה"מ') && (
             <button 
               onClick={() => setActiveView('tasks')}
               className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'tasks' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
@@ -773,7 +778,7 @@ export default function Dashboard({ profile }: Props) {
           >
             <CalendarIcon size={20} className={activeView === 'schedule' ? 'drop-shadow-sm' : ''} /> ניהול לו"ז ומצבות
           </button>
-          {(profile.role === 'מפק"צ' || profile.role === 'מה"מ' || profile.role === 'ממ"ש') && (
+          {(normalizedRole === 'מפק"צ' || normalizedRole === 'מה"מ' || normalizedRole === 'ממ"ש') && (
             <button 
               onClick={() => setActiveView('mifkad')}
               className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'mifkad' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
