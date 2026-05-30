@@ -207,7 +207,8 @@ export default function Dashboard({ profile }: Props) {
   }, [selectedEventId]);
 
   const isMammash = normalizedRole === 'ממ"ש';
-  const isCadet = normalizedRole === 'צוער';
+  const isStaff = ['מפק"צ', 'סמק"ס', 'מק"ס', 'ממ"ש', 'מה"מ'].includes(normalizedRole);
+  const isCadet = !isStaff;
   const isMaham = normalizedRole === 'מה"מ';
   
   const relevantCadets = isMammash 
@@ -882,7 +883,7 @@ export default function Dashboard({ profile }: Props) {
                 </h3>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {!['מפק"צ', 'סמק"ס', 'מק"ס'].includes(profile.role) && !editingTeam && (
+                {isMaham && !editingTeam && (
                   <button
                     onClick={() => setMahamEditMode(m => !m)}
                     className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
