@@ -189,21 +189,21 @@ export default function Dashboard({ profile }: Props) {
     return (
       <div className="w-full">
         {/* Grand total banner */}
-        <div className="mb-5 p-4 rounded-xl flex items-center justify-between bg-slate-900 text-white">
-          <div className="flex items-center gap-2">
-            <Users size={20} className="text-sky-400" />
-            <span className="font-semibold text-lg">סה"כ מצבה</span>
+        <div className="mb-4 p-3 rounded-xl flex items-center justify-between bg-slate-900 text-white shadow-md">
+          <div className="flex items-center gap-1.5">
+            <Users size={18} className="text-sky-400" />
+            <span className="font-semibold text-base">מצבה</span>
           </div>
-          <div className="flex items-center gap-4 text-lg font-bold">
+          <div className="flex items-center gap-3 text-sm font-bold">
             <span className="text-emerald-400">{totalPresent} נוכחים</span>
-            <span className="text-slate-500">|</span>
+            <span className="text-slate-600">|</span>
             <span className="text-red-400">{totalAbsent} נעדרים</span>
-            <span className="text-slate-500">|</span>
-            <span className="text-slate-300">{totalCadets} בסה"כ</span>
+            <span className="text-slate-600">|</span>
+            <span className="text-slate-300">{totalCadets} סה"כ</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-slide-down">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 animate-slide-down">
           {teams.map(team => {
             const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
             if (teamCadets.length === 0) return null;
@@ -214,24 +214,24 @@ export default function Dashboard({ profile }: Props) {
             const absentCount = absentLogs.length;
             const unmarkedCount = teamCadets.length - teamLogs.length;
             return (
-              <div key={team} className={`p-4 rounded-xl border-2 shadow-sm ${
-                absentCount > 0 ? 'border-red-200 bg-red-50' :
-                presentCount === teamCadets.length ? 'border-emerald-200 bg-emerald-50' :
+              <div key={team} className={`p-3 rounded-xl border shadow-sm flex flex-col justify-center ${
+                absentCount > 0 ? 'border-red-200 bg-red-50/50' :
+                presentCount === teamCadets.length ? 'border-emerald-200 bg-emerald-50/50' :
                 'border-slate-200 bg-white'
               }`}>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-slate-700 text-base">צוות {team}</span>
-                  <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="font-bold text-slate-800 text-sm">צוות {team}</span>
+                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${
                     presentCount === teamCadets.length ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
                   }`}>
-                    {presentCount}/{teamCadets.length} נוכחים
+                    {presentCount}/{teamCadets.length}
                   </span>
                 </div>
                 {unmarkedCount > 0 && (
-                  <p className="text-xs text-amber-600 mb-1">{unmarkedCount} ללא דיווח</p>
+                  <p className="text-[11px] font-semibold text-amber-600 bg-amber-50 rounded px-1.5 py-0.5 self-start mt-0.5">{unmarkedCount} ללא דיווח</p>
                 )}
                 {absentCount > 0 && (
-                  <div className="mt-2 text-xs border-t border-red-100 pt-2">
+                  <div className="mt-1.5 text-[11px] border-t border-red-100 pt-1.5">
                     <span className="text-red-600 font-semibold">{absentCount} נעדרים:</span>
                     <ul className="mt-1 space-y-1">
                       {absentLogs.map(log => {
