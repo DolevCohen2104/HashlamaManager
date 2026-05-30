@@ -164,7 +164,7 @@ export default function TaskManager({ profile }: Props) {
   
   const availableCadetsForSearch = isStaff 
     ? (isMammash 
-        ? cadets.filter(c => c.team_number === myTeam)
+        ? cadets.filter(c => c.team_number?.toString() === myTeam)
         : cadets)
     : [];
 
