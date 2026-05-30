@@ -141,6 +141,12 @@ export default function TaskManager({ profile }: Props) {
     }
   };
 
+  const availableCadetsForSearch = isStaff 
+    ? (profile.role === 'ממ"ש' 
+        ? cadets.filter(c => c.team_number === myTeam)
+        : cadets)
+    : [];
+
   return (
     <div className="flex flex-col h-full animate-fade-in">
       <div className="flex justify-between items-center mb-4">
@@ -222,8 +228,7 @@ export default function TaskManager({ profile }: Props) {
                 >
                   <option value="all">כלל ההשלמה</option>
                   <option value="teams">צוותים ספציפיים</option>
-                  <option value="team">צוות בודד</option>
-                  <option value="individual">צוער ספציפי (לפי מס' אישי)</option>
+                  <option value="individual">צוער ספציפי (חיפוש לפי שם)</option>
                 </select>
 
                 {newTask.target_type === 'teams' && (
@@ -245,15 +250,25 @@ export default function TaskManager({ profile }: Props) {
                   </div>
                 )}
 
-                {(newTask.target_type === 'team' || newTask.target_type === 'individual') && (
-                  <input 
-                    type="text" 
-                    placeholder={newTask.target_type === 'team' ? "הזן מספר צוות (למשל: 3)" : "הזן מספר אישי מלא של צוער"}
-                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm"
-                    required
-                    value={newTask.target_value || ''}
-                    onChange={e => setNewTask({...newTask, target_value: e.target.value})}
-                  />
+                {newTask.target_type === 'individual' && (
+                  <div>
+                    <input 
+                      type="text" 
+                      list="cadets-datalist"
+                      placeholder="חפש שם צוער או הזן מספר אישי"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                      required
+                      value={newTask.target_value || ''}
+                      onChange={e => setNewTask({...newTask, target_value: e.target.value})}
+                    />
+                    <datalist id="cadets-datalist">
+                      {availableCadetsForSearch.map(c => (
+                        <option key={c.personal_id} value={c.personal_id}>
+                          {c.full_name} (צוות {c.team_number || '-'})
+                        </option>
+                      ))}
+                    </datalist>
+                  </div>
                 )}
               </div>
             </div>
