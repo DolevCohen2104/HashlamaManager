@@ -38,7 +38,7 @@ export default function ServiceRequestsManager({ profile, filterType, teamFilter
       const cadets = await fetchCadets();
       const myCadet = cadets.find(c => c.personal_id === profile.personal_id);
       if (myCadet) {
-        data = data.filter(r => r.requester_id === myCadet.cadet_id);
+        data = data.filter(r => r.cadet_id === myCadet.cadet_id);
       } else {
         data = [];
       }
