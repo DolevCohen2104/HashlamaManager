@@ -679,7 +679,7 @@ export default function Dashboard({ profile }: Props) {
       <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pb-32 md:pb-8">
         {activeView === 'tasks' ? (
           <div className="h-full flex flex-col gap-6">
-            {profile.role === 'צוער' && (
+            {(profile.role === 'צוער' || profile.role === 'ממ"ש') && (
               <RollCallManager profile={profile} cadets={cadets} />
             )}
             <TaskManager profile={profile} />
@@ -773,7 +773,7 @@ export default function Dashboard({ profile }: Props) {
           >
             <CalendarIcon size={20} className={activeView === 'schedule' ? 'drop-shadow-sm' : ''} /> ניהול לו"ז ומצבות
           </button>
-          {(profile.role === 'מפק"צ' || profile.role === 'מה"מ') && (
+          {(profile.role === 'מפק"צ' || profile.role === 'מה"מ' || profile.role === 'ממ"ש') && (
             <button 
               onClick={() => setActiveView('mifkad')}
               className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'mifkad' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}

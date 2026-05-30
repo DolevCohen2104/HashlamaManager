@@ -276,7 +276,7 @@ export default function RollCallManager({ profile, cadets }: Props) {
                       <h4 className="font-bold text-sm text-slate-700 mb-3">טרם אישרו ({missingCadets.length}):</h4>
                       <div className="flex flex-wrap gap-2">
                         {missingCadets.map(c => (
-                          <span key={c.cadet_id} className="px-3 py-1.5 bg-white border border-rose-200 shadow-sm text-rose-600 text-sm rounded-xl font-bold">
+                          <span key={c.personal_id} className="px-3 py-1.5 bg-white border border-rose-200 shadow-sm text-rose-600 text-sm rounded-xl font-bold">
                             {c.full_name}
                           </span>
                         ))}
