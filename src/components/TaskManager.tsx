@@ -36,6 +36,13 @@ export default function TaskManager({ profile }: Props) {
 
   useEffect(() => {
     loadData();
+    
+    // Polling for real-time updates every 10 seconds
+    const interval = setInterval(() => {
+      loadLiveUpdates();
+    }, 10000);
+    
+    return () => clearInterval(interval);
   }, [profile]);
 
   const loadData = async () => {
@@ -49,6 +56,16 @@ export default function TaskManager({ profile }: Props) {
     setCompletions(tc);
     setCadets(c);
     setLoading(false);
+  };
+
+  const loadLiveUpdates = async () => {
+    // Only fetch tasks and completions silently in the background
+    const [t, tc] = await Promise.all([
+      fetchTasks(),
+      fetchTaskCompletions()
+    ]);
+    setTasks(t);
+    setCompletions(tc);
   };
 
   const myCadet = cadets.find(c => c.personal_id === profile.personal_id);
@@ -441,8 +458,8 @@ export default function TaskManager({ profile }: Props) {
                 // Calculate targets
                 let targetCadets: Cadet[] = [];
                 if (task.target_type === 'all') targetCadets = cadets;
-                else if (task.target_type === 'team') targetCadets = cadets.filter(c => c.team_number === task.target_value);
-                else if (task.target_type === 'teams') targetCadets = cadets.filter(c => task.target_value?.split(',').includes(c.team_number || ''));
+                else if (task.target_type === 'team') targetCadets = cadets.filter(c => c.team_number?.toString() === task.target_value?.toString());
+                else if (task.target_type === 'teams') targetCadets = cadets.filter(c => task.target_value?.split(',').includes(c.team_number?.toString() || ''));
                 else if (task.target_type === 'individual') targetCadets = cadets.filter(c => c.personal_id === task.target_value);
 
                 // Cross-reference with completions
