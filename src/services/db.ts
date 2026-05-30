@@ -44,6 +44,17 @@ export const deleteCadet = async (id: string) => {
 };
 
 // Attendance
+export const cleanupOldAttendance = async () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const { error } = await supabase
+    .from('attendance_logs')
+    .delete()
+    .lt('updated_at', today.toISOString());
+  
+  if (error) console.error('Failed to cleanup old attendance:', error);
+};
+
 export const fetchAttendanceForEvent = async (eventId: string): Promise<AttendanceLog[]> => {
   const { data, error } = await supabase
     .from('attendance_logs')

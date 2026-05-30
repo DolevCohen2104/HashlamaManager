@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft, Edit3, MessageCircle, Gift, Loader2, ListTodo } from 'lucide-react';
 import type { UserProfile, CalendarEvent, Cadet, AttendanceLog } from '../types';
 import { fetchTodayEvents } from '../services/calendar';
-import { fetchCadets, fetchAttendanceForEvent, upsertAttendance } from '../services/db';
+import { fetchCadets, fetchAttendanceForEvent, upsertAttendance, cleanupOldAttendance } from '../services/db';
 import { getWhatsAppLink } from '../utils';
 import LoadingSpinner from './LoadingSpinner';
 import TaskManager from './TaskManager';
@@ -53,9 +53,10 @@ export default function Dashboard({ profile }: Props) {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [evts, cdts] = await Promise.all([
+      const [evts, cdts, _] = await Promise.all([
         fetchTodayEvents(),
-        fetchCadets()
+        fetchCadets(),
+        cleanupOldAttendance()
       ]);
       setEvents(evts);
       setCadets(cdts);
