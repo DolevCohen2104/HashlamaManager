@@ -21,7 +21,7 @@ const TYPE_CONFIG = {
 export default function ServiceRequestModule({ profile, type, onClose }: Props) {
   const config = TYPE_CONFIG[type];
   const isManager = config.isManager(profile);
-  const isViewer = ['סמק"ס', 'מק"ס'].includes(profile.role) || (profile.role === 'מפק"צ' && type !== 'leave');
+  const isViewer = ['מפק"צ', 'סמק"ס', 'מק"ס'].includes(profile.role);
   
   const [activeTab, setActiveTab] = useState<'create' | 'manage'>(isViewer ? 'manage' : 'create');
 
