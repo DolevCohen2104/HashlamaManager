@@ -139,6 +139,25 @@ export default function Dashboard({ profile }: Props) {
     }
   };
 
+  // Real-time polling for the currently viewed attendance
+  useEffect(() => {
+    if (!selectedEventId) return;
+
+    const intervalId = setInterval(async () => {
+      // Skip update if there are pending local changes (typing a reason)
+      if (Object.keys(debounceTimers.current).length > 0) return;
+      
+      try {
+        const freshLogs = await fetchAttendanceForEvent(selectedEventId);
+        setAttendance(freshLogs);
+      } catch (err) {
+        console.error('Failed to poll attendance:', err);
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [selectedEventId]);
+
   const isMammash = profile.role === 'ממ"ש';
   const isCadet = profile.role === 'צוער';
   
