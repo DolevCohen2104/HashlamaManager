@@ -684,7 +684,7 @@ export default function Dashboard({ profile }: Props) {
             )}
             <TaskManager profile={profile} />
           </div>
-        ) : (
+        ) : activeView === 'schedule' ? (
           <div className="flex flex-col h-full pr-2">
             <header className="flex flex-col md:flex-row justify-between md:items-end mb-8 gap-4">
               <div className="flex flex-col gap-1">
@@ -748,7 +748,7 @@ export default function Dashboard({ profile }: Props) {
         </div>
       )}
           </div>
-        )}
+        ) : null}
       </div>
 
       {activeView === 'mifkad' && (
