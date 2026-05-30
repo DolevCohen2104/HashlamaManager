@@ -69,9 +69,9 @@ export default function RollCallManager({ profile, cadets }: Props) {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsCreating(true);
-    let autoTitle = 'בדיקת נוכחות כללית';
-    if (newType === 'home') autoTitle = 'וידוא הגעה הביתה';
-    else if (newType === 'base') autoTitle = 'וידוא נוכחות בבסיס';
+    let autoTitle = 'כללי';
+    if (newType === 'home') autoTitle = 'הגעה הביתה';
+    else if (newType === 'base') autoTitle = 'נוכחות בבסיס';
     
     await createRollCall(autoTitle, newType);
     setIsCreating(false);
@@ -111,7 +111,7 @@ export default function RollCallManager({ profile, cadets }: Props) {
 
     return (
       <div className="w-full flex flex-col gap-4 animate-fade-in mb-8">
-        <h2 className="text-xl font-black text-slate-800 mb-2 px-2">נדרש מענה שלך</h2>
+        <h2 className="text-xl font-black text-slate-800 mb-2 px-2">נדרש ירוק בעיניים</h2>
         {unrespondedCalls.map(call => {
           return (
             <div key={call.id} className="rounded-3xl p-6 shadow-xl border overflow-hidden relative bg-white border-sky-100">
@@ -120,7 +120,9 @@ export default function RollCallManager({ profile, cadets }: Props) {
                   {call.type === 'home' ? <Home size={32} /> : call.type === 'base' ? <MapPin size={32} /> : <ShieldCheck size={32} />}
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-slate-800">{call.title}</h3>
+                  <h3 className="text-xl font-black text-slate-800">
+                    ירוק בעיניים {call.title === 'בדיקת נוכחות כללית' ? '' : `- ${call.title.replace('וידוא ', '')}`}
+                  </h3>
                   <p className="text-sm text-slate-500">{new Date(call.created_at).toLocaleString('he-IL')}</p>
                 </div>
               </div>
@@ -130,7 +132,7 @@ export default function RollCallManager({ profile, cadets }: Props) {
                 disabled={submitting === call.id}
                 className="w-full bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-black text-lg py-4 rounded-2xl shadow-md shadow-sky-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
               >
-                {submitting === call.id ? <Loader2 className="w-6 h-6 animate-spin" /> : 'אשר נוכחות / הגעה'}
+                {submitting === call.id ? <Loader2 className="w-6 h-6 animate-spin" /> : 'אשר ירוק בעיניים'}
               </button>
             </div>
           );

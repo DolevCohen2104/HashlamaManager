@@ -795,7 +795,7 @@ export default function Dashboard({ profile }: Props) {
           >
             <CalendarIcon size={20} className={activeView === 'schedule' ? 'drop-shadow-sm' : ''} /> ניהול לו"ז ומצבות
           </button>
-          {(normalizedRole === 'מה"מ' || normalizedRole === 'ממ"ש') && (
+          {(normalizedRole === 'מה"מ' || (normalizedRole === 'ממ"ש' && hasActiveRollCalls)) && (
             <button 
               onClick={() => setActiveView('mifkad')}
               className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'mifkad' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
