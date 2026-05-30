@@ -14,14 +14,14 @@ interface Props {
 
 const TYPE_CONFIG = {
   maintenance: { title: 'תקלות בינוי ותשתיות', icon: PenTool, color: 'text-orange-500', bg: 'bg-orange-50', isManager: (p: UserProfile) => p.role === 'מה"מ' || p.specific_role === 'קל"ג' },
-  leave: { title: 'בקשות יציאה', icon: CalendarOff, color: 'text-indigo-500', bg: 'bg-indigo-50', isManager: (p: UserProfile) => p.role === 'מה"מ' || p.role === 'ממ"ש' },
+  leave: { title: 'בקשות יציאה', icon: CalendarOff, color: 'text-indigo-500', bg: 'bg-indigo-50', isManager: (p: UserProfile) => p.role === 'מה"מ' || p.role === 'ממ"ש' || p.role === 'מפק"צ' },
   clinic: { title: 'בקשות חופ"ל / רופא', icon: Cross, color: 'text-rose-500', bg: 'bg-rose-50', isManager: (p: UserProfile) => p.role === 'מה"מ' || p.specific_role === 'קמב"צ' }
 };
 
 export default function ServiceRequestModule({ profile, type, onClose }: Props) {
   const config = TYPE_CONFIG[type];
   const isManager = config.isManager(profile);
-  const isViewer = ['מפק"צ', 'סמק"ס', 'מק"ס'].includes(profile.role);
+  const isViewer = ['סמק"ס', 'מק"ס'].includes(profile.role) || (profile.role === 'מפק"צ' && type !== 'leave');
   
   const [activeTab, setActiveTab] = useState<'create' | 'manage'>(isViewer ? 'manage' : 'create');
 

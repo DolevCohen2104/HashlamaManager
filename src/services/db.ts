@@ -152,12 +152,24 @@ export const fetchServiceRequests = async (type?: string): Promise<any[]> => {
   return data || [];
 };
 
-export const updateServiceRequestStatus = async (id: string, status: string) => {
-  const { error } = await supabase
-    .from('service_requests')
-    .update({ status })
-    .eq('id', id);
-  if (error) handleSupabaseError(error, 'updateServiceRequestStatus');
+export const updateServiceRequestStatus = async (id: string, status: string, rejectionReason?: string) => {
+  if (rejectionReason) {
+    const { data } = await supabase.from('service_requests').select('details').eq('id', id).single();
+    const details = data?.details || {};
+    details.rejection_reason = rejectionReason;
+    
+    const { error } = await supabase
+      .from('service_requests')
+      .update({ status, details })
+      .eq('id', id);
+    if (error) handleSupabaseError(error, 'updateServiceRequestStatus');
+  } else {
+    const { error } = await supabase
+      .from('service_requests')
+      .update({ status })
+      .eq('id', id);
+    if (error) handleSupabaseError(error, 'updateServiceRequestStatus');
+  }
 };
 
 export const submitServiceRequest = async (request: any) => {

@@ -50,8 +50,24 @@ export default function ServiceRequestsManager({ profile, filterType, teamFilter
   };
 
   const handleUpdateStatus = async (id: string, status: string) => {
-    setRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r));
-    await updateServiceRequestStatus(id, status);
+    let rejectionReason = undefined;
+    if (status === 'rejected') {
+      const reason = window.prompt("אנא הזן סיבת דחייה:");
+      if (reason === null) return; // cancelled
+      rejectionReason = reason;
+    }
+    
+    setRequests(prev => prev.map(r => {
+      if (r.id === id) {
+        return { 
+          ...r, 
+          status, 
+          details: rejectionReason ? { ...r.details, rejection_reason: rejectionReason } : r.details 
+        };
+      }
+      return r;
+    }));
+    await updateServiceRequestStatus(id, status, rejectionReason);
   };
 
   const renderStatusBadge = (status: string) => {
@@ -140,12 +156,13 @@ export default function ServiceRequestsManager({ profile, filterType, teamFilter
                     justification: 'נימוק',
                     location: 'מיקום',
                     description: 'תיאור',
-                    severity: 'חומרה'
+                    severity: 'חומרה',
+                    rejection_reason: 'סיבת דחייה'
                   };
 
                   return (
-                    <div key={key} className={key === 'justification' || key === 'description' ? 'md:col-span-2' : ''}>
-                      <span className="font-bold block text-slate-500 mb-0.5">{labelMap[key] || key}:</span>
+                    <div key={key} className={`${key === 'justification' || key === 'description' || key === 'rejection_reason' ? 'md:col-span-2' : ''} ${key === 'rejection_reason' ? 'text-rose-600 bg-rose-50 p-2 rounded-lg border border-rose-100' : ''}`}>
+                      <span className={`font-bold block mb-0.5 ${key === 'rejection_reason' ? 'text-rose-700' : 'text-slate-500'}`}>{labelMap[key] || key}:</span>
                       {String(value)}
                     </div>
                   );
