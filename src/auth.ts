@@ -31,7 +31,7 @@ export const signInWithPersonalId = async (personalId: string): Promise<AppUser 
   const cleanId = personalId.trim();
   const { data: cadetData, error: cadetError } = await supabase
     .from('cadets')
-    .select('personal_id, role, specific_role, full_name, team_number')
+    .select('personal_id, role, role, full_name, team_number')
     .eq('personal_id', cleanId)
     .single();
 
@@ -43,7 +43,7 @@ export const signInWithPersonalId = async (personalId: string): Promise<AppUser 
   const user: AppUser = {
     personal_id: cadetData.personal_id,
     role: cadetData.role || 'צוער',
-    specific_role: cadetData.specific_role,
+    specific_role: cadetData.role,
     full_name: cadetData.full_name || 'משתמש מערכת',
     team_number: cadetData.team_number?.toString() || null,
   };
