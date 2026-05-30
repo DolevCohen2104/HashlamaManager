@@ -23,7 +23,7 @@ export default function Dashboard({ profile }: Props) {
   // Normalize role to handle different quote types (e.g., ממ"ש vs ממ״ש vs ממ''ש)
   const normalizedRole = profile.role ? profile.role.replace(/["'״]/g, '"') : '';
   
-  const [activeView, setActiveView] = useState<'tasks' | 'schedule' | 'mifkad'>(['מפק"צ', 'סמק"ס', 'מק"ס'].includes(normalizedRole) ? 'schedule' : 'tasks');
+  const [activeView, setActiveView] = useState<'tasks' | 'schedule' | 'mifkad'>(normalizedRole === 'צוער' ? 'tasks' : 'schedule');
   const [hasActiveRollCalls, setHasActiveRollCalls] = useState(false);
   const [tasksEnabled, setTasksEnabled] = useState(true);
   const [attendance, setAttendance] = useState<AttendanceLog[]>([]);
