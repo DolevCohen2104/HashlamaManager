@@ -68,23 +68,39 @@ export const fetchAttendanceForEvent = async (eventId: string): Promise<Attendan
   return data as AttendanceLog[];
 };
 
-export const upsertAttendance = async (log: Omit<AttendanceLog, 'log_id' | 'updated_at'>, existingLogId?: string) => {
+export const upsertAttendance = async (log: any, existingLogId?: string) => {
   const payload = {
     ...log,
     updated_at: new Date().toISOString()
   };
 
-  if (existingLogId) {
+  const idToUse = existingLogId || payload.log_id;
+
+  // UUIDs contain hyphens. If it's a temp ID like Math.random(), we ignore it.
+  if (idToUse && String(idToUse).includes('-')) {
     const { error } = await supabase
       .from('attendance_logs')
       .update(payload)
-      .eq('log_id', existingLogId);
+      .eq('log_id', idToUse);
     if (error) handleSupabaseError(error, 'upsertAttendance (update)');
   } else {
-    const { error } = await supabase
+    // Pre-flight check to avoid 409 unique constraint errors
+    const { data: existing } = await supabase
       .from('attendance_logs')
-      .insert(payload);
-    if (error) handleSupabaseError(error, 'upsertAttendance (insert)');
+      .select('log_id')
+      .eq('event_id', payload.event_id)
+      .eq('cadet_id', payload.cadet_id)
+      .single();
+
+    if (existing) {
+      delete payload.log_id;
+      const { error } = await supabase.from('attendance_logs').update(payload).eq('log_id', existing.log_id);
+      if (error) handleSupabaseError(error, 'upsertAttendance (update after check)');
+    } else {
+      delete payload.log_id; // Ensure Supabase auto-generates a proper UUID
+      const { error } = await supabase.from('attendance_logs').insert(payload);
+      if (error) handleSupabaseError(error, 'upsertAttendance (insert)');
+    }
   }
 };
 
