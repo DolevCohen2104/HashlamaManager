@@ -161,11 +161,22 @@ export default function Dashboard({ profile }: Props) {
         ]);
         
         setHasActiveRollCalls(rollCalls.length > 0);
-        setTasksEnabled(isTasksEnabled !== false);
+        const tasksCurrentlyEnabled = isTasksEnabled !== false;
+        setTasksEnabled(tasksCurrentlyEnabled);
         
         // If user is on mifkad tab and roll call was closed (and not maham), redirect them out
         if (rollCalls.length === 0 && activeView === 'mifkad' && normalizedRole !== 'מה"מ') {
-          setActiveView(normalizedRole === 'צוער' ? 'tasks' : 'schedule');
+          setActiveView(normalizedRole === 'צוער' ? (tasksCurrentlyEnabled ? 'tasks' : 'schedule') : 'schedule');
+        }
+
+        // If tasks are disabled and user is on tasks tab (and not maham), redirect to schedule
+        if (!tasksCurrentlyEnabled && activeView === 'tasks' && normalizedRole !== 'מה"מ') {
+          setActiveView('schedule');
+        }
+        
+        // If tasks are enabled and cadet is on schedule tab, redirect back to tasks (since they have no other view)
+        if (tasksCurrentlyEnabled && activeView === 'schedule' && normalizedRole === 'צוער') {
+          setActiveView('tasks');
         }
       } catch (err) {}
     };
