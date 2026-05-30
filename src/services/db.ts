@@ -118,8 +118,15 @@ export const uncompleteTask = async (taskId: string, cadetId: string) => {
 export const createTask = async (task: any) => {
   const { error } = await supabase
     .from('tasks')
-    .insert(task);
   if (error) handleSupabaseError(error, 'createTask');
+};
+
+export const deleteTask = async (taskId: string) => {
+  // Supabase should cascade delete task_completions if the foreign key is set up with ON DELETE CASCADE.
+  // If not, we should delete from task_completions first.
+  await supabase.from('task_completions').delete().eq('task_id', taskId);
+  const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+  if (error) handleSupabaseError(error, 'deleteTask');
 };
 
 // Service Requests

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, Circle, Plus, Trash2, CalendarClock, ExternalLink, Link2, ListTodo, FileText, BookOpen, RotateCcw, Users, Activity, CheckSquare } from 'lucide-react';
 import type { Task, TaskCompletion, UserProfile, Cadet } from '../types';
-import { fetchTasks, fetchTaskCompletions, completeTask, uncompleteTask, createTask, fetchCadets } from '../services/db';
+import { fetchTasks, fetchTaskCompletions, completeTask, uncompleteTask, createTask, fetchCadets, deleteTask } from '../services/db';
 import LoadingSpinner from './LoadingSpinner';
 
 interface Props {
@@ -17,6 +17,8 @@ export default function TaskManager({ profile }: Props) {
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('active');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const isStaff = profile.role !== 'צוער';
   const isMammash = profile.role === 'ממ"ש';
@@ -83,6 +85,15 @@ export default function TaskManager({ profile }: Props) {
     setCompletions(completions.filter(c => !(c.task_id === taskId && c.cadet_id === myCadet.cadet_id)));
     await uncompleteTask(taskId, myCadet.cadet_id);
     loadData();
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (window.confirm("האם אתה בטוח שברצונך למחוק משימה זו? המחיקה תסיר את המשימה ואת כל נתוני הביצוע עבור כלל הצוערים.")) {
+      // Optimistic
+      setTasks(tasks.filter(t => t.id !== taskId));
+      await deleteTask(taskId);
+      loadData();
+    }
   };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -156,6 +167,8 @@ export default function TaskManager({ profile }: Props) {
         ? cadets.filter(c => c.team_number === myTeam)
         : cadets)
     : [];
+
+  const filteredCadetsForSearch = availableCadetsForSearch.filter(c => c.full_name.includes(searchQuery) || c.personal_id.includes(searchQuery));
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -290,23 +303,36 @@ export default function TaskManager({ profile }: Props) {
                 )}
 
                 {newTask.target_type === 'individual' && (
-                  <div>
+                  <div className="relative">
                     <input 
                       type="text" 
-                      list="cadets-datalist"
                       placeholder="התחל להקליד שם של צוער..."
                       className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm"
                       required
-                      value={newTask.target_value || ''}
-                      onChange={e => setNewTask({...newTask, target_value: e.target.value})}
+                      value={searchQuery}
+                      onChange={e => {
+                        setSearchQuery(e.target.value);
+                        setShowDropdown(true);
+                      }}
+                      onFocus={() => setShowDropdown(true)}
                     />
-                    <datalist id="cadets-datalist">
-                      {availableCadetsForSearch.map(c => (
-                        <option key={c.personal_id} value={c.personal_id}>
-                          {c.full_name} (צוות {c.team_number || '-'})
-                        </option>
-                      ))}
-                    </datalist>
+                    {showDropdown && filteredCadetsForSearch.length > 0 && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {filteredCadetsForSearch.map(c => (
+                          <div 
+                            key={c.personal_id}
+                            className="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0"
+                            onClick={() => {
+                              setNewTask({...newTask, target_value: c.personal_id});
+                              setSearchQuery(`${c.full_name} (צוות ${c.team_number || '-'})`);
+                              setShowDropdown(false);
+                            }}
+                          >
+                            {c.full_name} <span className="text-slate-400 text-xs">(צוות {c.team_number || '-'})</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -471,8 +497,15 @@ export default function TaskManager({ profile }: Props) {
 
                 return (
                   <div key={task.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                    <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-                      <h4 className="font-bold text-slate-800 text-lg">{task.title}</h4>
+                    <div className="p-4 border-b border-slate-100 bg-slate-50/50 relative">
+                      <button 
+                        onClick={() => handleDeleteTask(task.id)}
+                        className="absolute top-4 left-4 text-slate-400 hover:text-rose-500 transition-colors p-1.5 hover:bg-rose-50 rounded-lg"
+                        title="מחק משימה"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                      <h4 className="font-bold text-slate-800 text-lg pl-8">{task.title}</h4>
                       <p className="text-xs text-slate-500 mt-1">
                         הוקצה ל: {task.target_type === 'all' ? 'כלל ההשלמה' : task.target_type === 'teams' ? 'צוותים מרובים' : task.target_type === 'team' ? `צוות ${task.target_value}` : 'צוער ספציפי'}
                       </p>
