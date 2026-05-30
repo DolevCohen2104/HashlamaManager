@@ -33,7 +33,7 @@ export const checkUserStatus = async (personalId: string): Promise<{ exists: boo
     .from('cadets')
     .select('personal_id, pin_code')
     .eq('personal_id', cleanId)
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
     return { exists: false, hasPin: false };

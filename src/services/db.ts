@@ -251,6 +251,6 @@ export const submitRollCallResponse = async (rollCallId: string, cadetId: string
   // Upsert to handle multiple clicks gracefully
   const { error } = await supabase
     .from('roll_call_responses')
-    .upsert({ roll_call_id: rollCallId, cadet_id, status: 'present' }, { onConflict: 'roll_call_id,cadet_id' });
+    .upsert({ roll_call_id: rollCallId, cadet_id: cadetId, status: 'present' }, { onConflict: 'roll_call_id,cadet_id' });
   if (error) handleSupabaseError(error, 'submitRollCallResponse');
 };
