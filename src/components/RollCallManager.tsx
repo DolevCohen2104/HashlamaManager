@@ -16,13 +16,14 @@ export default function RollCallManager({ profile, cadets }: Props) {
   const [newTitle, setNewTitle] = useState('');
   const [newType, setNewType] = useState<'general' | 'home' | 'base'>('general');
   const [expandedCall, setExpandedCall] = useState<string | null>(null);
+  const [expandedTeamView, setExpandedTeamView] = useState<Record<string, string | null>>({});
   const [submitting, setSubmitting] = useState<string | null>(null);
 
   const isMaham = profile.role === 'מה"מ';
   const isCadet = profile.role === 'צוער';
   
-  // Filter cadets for the current commander if they are a Mefaktz
-  const myTeamCadets = isMaham ? cadets : cadets.filter(c => c.team_number === profile.team_number);
+  // Filter cadets for the current commander if they are a Mefaktz or Memash
+  const myTeamCadets = isMaham ? cadets : cadets.filter(c => c.team_number?.toString() === profile.team_number?.toString());
 
   useEffect(() => {
     loadRollCalls();
@@ -255,21 +256,57 @@ export default function RollCallManager({ profile, cadets }: Props) {
               {expandedCall === call.id && (
                 <div className="p-5 bg-slate-50 border-t border-slate-100 flex flex-col gap-5 animate-slide-down">
                   {isMaham ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {Array.from(teamsMap.entries()).sort((a,b) => String(a[0]).localeCompare(String(b[0]))).map(([team, stats]) => {
-                        const teamComplete = stats.total > 0 && stats.responded === stats.total;
-                        return (
-                          <div key={team} className={`p-4 rounded-2xl border flex flex-col items-center justify-center text-center gap-1.5 shadow-sm transition-all ${
-                            teamComplete ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-sky-200'
-                          }`}>
-                            <span className={`font-black text-lg ${teamComplete ? 'text-emerald-700' : 'text-slate-700'}`}>צוות {team}</span>
-                            <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1">
-                              <div className={`h-1.5 rounded-full ${teamComplete ? 'bg-emerald-500' : 'bg-sky-500'}`} style={{ width: `${(stats.responded / stats.total) * 100}%` }}></div>
+                    <div className="flex flex-col gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {Array.from(teamsMap.entries()).sort((a,b) => String(a[0]).localeCompare(String(b[0]))).map(([team, stats]) => {
+                          const teamComplete = stats.total > 0 && stats.responded === stats.total;
+                          const isExpanded = expandedTeamView[call.id] === team;
+                          return (
+                            <div 
+                              key={team} 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedTeamView(prev => ({
+                                  ...prev,
+                                  [call.id]: prev[call.id] === team ? null : team
+                                }));
+                              }}
+                              className={`p-4 rounded-2xl border flex flex-col items-center justify-center text-center gap-1.5 shadow-sm transition-all cursor-pointer ${
+                                isExpanded ? 'ring-2 ring-emerald-500 scale-[1.02]' : ''
+                              } ${
+                                teamComplete ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-sky-200'
+                              }`}>
+                              <span className={`font-black text-lg ${teamComplete ? 'text-emerald-700' : 'text-slate-700'}`}>צוות {team}</span>
+                              <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1">
+                                <div className={`h-1.5 rounded-full ${teamComplete ? 'bg-emerald-500' : 'bg-sky-500'}`} style={{ width: `${(stats.responded / stats.total) * 100}%` }}></div>
+                              </div>
+                              <span className="text-xs font-bold text-slate-500 mt-1">{stats.responded}/{stats.total} ירוק</span>
                             </div>
-                            <span className="text-xs font-bold text-slate-500 mt-1">{stats.responded}/{stats.total} ירוק</span>
+                          );
+                        })}
+                      </div>
+                      
+                      {expandedTeamView[call.id] && (
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200 mt-2 animate-fade-in">
+                          <h4 className="font-bold text-sm text-slate-700 mb-3">
+                            צוות {expandedTeamView[call.id]} - טרם אישרו:
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {myTeamCadets
+                              .filter(c => c.team_number === expandedTeamView[call.id] && !respondedCadetIds.has(c.personal_id))
+                              .map(c => (
+                                <span key={c.personal_id} className="px-3 py-1.5 bg-white border border-rose-200 shadow-sm text-rose-600 text-sm rounded-xl font-bold">
+                                  {c.full_name}
+                                </span>
+                              ))}
+                            {myTeamCadets.filter(c => c.team_number === expandedTeamView[call.id] && !respondedCadetIds.has(c.personal_id)).length === 0 && (
+                              <div className="w-full p-3 bg-emerald-100 border border-emerald-200 rounded-xl text-emerald-700 font-bold flex items-center justify-center gap-2">
+                                <Check size={18} /> כל הצוות ירוק!
+                              </div>
+                            )}
                           </div>
-                        );
-                      })}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div>
