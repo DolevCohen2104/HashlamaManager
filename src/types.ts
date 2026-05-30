@@ -42,8 +42,12 @@ export interface Task {
   title: string;
   description: string | null;
   creator_id: string;
-  target_type: 'individual' | 'team' | 'all';
+  creator_name?: string;
+  creator_role?: string;
+  target_type: 'individual' | 'team' | 'teams' | 'all';
   target_value: string | null;
+  task_category?: string;
+  link_url?: string;
   created_at: string;
   deadline: string | null;
 }

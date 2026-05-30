@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Circle, Plus, Trash2, CalendarClock } from 'lucide-react';
+import { CheckCircle, Circle, Plus, Trash2, CalendarClock, ExternalLink, Link2, ListTodo, FileText, BookOpen } from 'lucide-react';
 import type { Task, TaskCompletion, UserProfile, Cadet } from '../types';
 import { fetchTasks, fetchTaskCompletions, completeTask, createTask, fetchCadets } from '../services/db';
 import LoadingSpinner from './LoadingSpinner';
@@ -15,13 +15,16 @@ export default function TaskManager({ profile }: Props) {
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
-  // New task form
+  // Advanced new task form
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
-    target_type: 'individual' as 'individual' | 'team' | 'all',
+    target_type: 'individual' as 'individual' | 'team' | 'teams' | 'all' | 'personal',
     target_value: profile.personal_id,
-    deadline: ''
+    selectedTeams: [] as string[],
+    deadline: '',
+    task_category: 'כללי',
+    link_url: ''
   });
 
   useEffect(() => {
@@ -42,7 +45,6 @@ export default function TaskManager({ profile }: Props) {
   };
 
   const handleComplete = async (taskId: string) => {
-    // Find my cadet_id based on personal_id
     const myCadet = cadets.find(c => c.personal_id === profile.personal_id);
     if (!myCadet) return;
 
@@ -65,131 +67,277 @@ export default function TaskManager({ profile }: Props) {
     const myCadet = cadets.find(c => c.personal_id === profile.personal_id);
     if (!myCadet) return;
 
+    const isStaff = profile.role !== 'צוער';
+
+    let finalTargetType = newTask.target_type;
+    let finalTargetValue = newTask.target_value;
+
+    if (!isStaff) {
+      // Cadet personal task
+      finalTargetType = 'individual';
+      finalTargetValue = profile.personal_id;
+    } else if (newTask.target_type === 'teams') {
+      finalTargetValue = newTask.selectedTeams.join(',');
+    } else if (newTask.target_type === 'all') {
+      finalTargetValue = null;
+    }
+
     const taskToCreate = {
       title: newTask.title,
       description: newTask.description || null,
       creator_id: myCadet.cadet_id,
-      target_type: newTask.target_type,
-      target_value: newTask.target_value,
+      creator_name: profile.full_name,
+      creator_role: profile.role,
+      target_type: finalTargetType,
+      target_value: finalTargetValue,
+      task_category: newTask.task_category,
+      link_url: newTask.link_url || null,
       deadline: newTask.deadline ? new Date(newTask.deadline).toISOString() : null
     };
 
     setIsCreating(false);
     await createTask(taskToCreate);
     loadData();
-    setNewTask({ ...newTask, title: '', description: '' });
+    setNewTask({ ...newTask, title: '', description: '', selectedTeams: [], link_url: '' });
+  };
+
+  const toggleTeamSelection = (team: string) => {
+    setNewTask(prev => ({
+      ...prev,
+      selectedTeams: prev.selectedTeams.includes(team) 
+        ? prev.selectedTeams.filter(t => t !== team)
+        : [...prev.selectedTeams, team]
+    }));
   };
 
   if (loading) return <div className="h-40 relative"><LoadingSpinner text="טוען משימות..." /></div>;
 
-  // Filter tasks that belong to me
   const myCadet = cadets.find(c => c.personal_id === profile.personal_id);
-  const myTeam = profile.team_number?.toString();
+  const myTeam = profile.team_number?.toString() || '';
   
   const relevantTasks = tasks.filter(t => {
     if (t.target_type === 'all') return true;
     if (t.target_type === 'team' && t.target_value === myTeam) return true;
+    if (t.target_type === 'teams' && t.target_value?.split(',').includes(myTeam)) return true;
     if (t.target_type === 'individual' && t.target_value === profile.personal_id) return true;
-    // Also if I created it, I can see it
     if (myCadet && t.creator_id === myCadet.cadet_id) return true;
     return false;
   });
 
-  // Separate active vs completed for ME
   const myActiveTasks = relevantTasks.filter(t => {
     return !completions.some(c => c.task_id === t.id && myCadet && c.cadet_id === myCadet.cadet_id);
   });
 
   const isStaff = profile.role !== 'צוער';
+  
+  // Extract unique teams
+  const uniqueTeams = Array.from(new Set(cadets.map(c => c.team_number).filter(Boolean))).sort((a, b) => Number(a) - Number(b));
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'טופס': return <FileText size={14} className="text-blue-500" />;
+      case 'מטלה': return <BookOpen size={14} className="text-rose-500" />;
+      default: return <ListTodo size={14} className="text-slate-500" />;
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-fade-in">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-slate-800 text-lg">משימות אישיות</h3>
-        {isStaff && (
-          <button 
-            onClick={() => setIsCreating(!isCreating)}
-            className="text-xs bg-indigo-100 text-indigo-700 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-indigo-200 transition-colors"
-          >
-            {isCreating ? <Cross size={14} /> : <Plus size={14} />}
-            {isCreating ? 'ביטול' : 'משימה חדשה'}
-          </button>
-        )}
+        <h3 className="font-bold text-slate-800 text-lg">
+          {isStaff ? 'משימות' : 'משימות אישיות'}
+        </h3>
+        <button 
+          onClick={() => setIsCreating(!isCreating)}
+          className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors ${
+            isStaff ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+          }`}
+        >
+          {isCreating ? <Trash2 size={14} /> : <Plus size={14} />}
+          {isCreating ? 'ביטול' : (isStaff ? 'משימה חדשה לצוערים' : 'הוסף משימה אישית')}
+        </button>
       </div>
 
-      {isCreating && isStaff && (
-        <form onSubmit={handleCreateSubmit} className="glass-card p-4 rounded-2xl mb-6 flex flex-col gap-3 border-l-4 border-l-indigo-400">
-          <input 
-            required 
-            type="text" 
-            placeholder="כותרת המשימה..." 
-            className="bg-white/50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-            value={newTask.title}
-            onChange={e => setNewTask({...newTask, title: e.target.value})}
-          />
-          <textarea 
-            placeholder="פירוט (אופציונלי)" 
-            className="bg-white/50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none h-16"
-            value={newTask.description}
-            onChange={e => setNewTask({...newTask, description: e.target.value})}
-          />
-          <div className="flex gap-2">
-            <select 
-              className="bg-white/50 border border-slate-200 rounded-lg px-3 py-2 text-sm flex-1"
-              value={newTask.target_type}
-              onChange={e => setNewTask({...newTask, target_type: e.target.value as any, target_value: e.target.value === 'all' ? null : profile.personal_id})}
-            >
-              <option value="individual">צוער ספציפי (לפי מס' אישי)</option>
-              <option value="team">צוות שלם</option>
-              <option value="all">כלל ההשלמה</option>
-            </select>
-            {newTask.target_type !== 'all' && (
+      {isCreating && (
+        <form onSubmit={handleCreateSubmit} className={`glass-card p-4 rounded-2xl mb-6 flex flex-col gap-4 border-l-4 ${isStaff ? 'border-l-indigo-400' : 'border-l-orange-400'} animate-slide-down`}>
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="block text-xs font-semibold text-slate-500 mb-1">כותרת</label>
               <input 
+                required 
                 type="text" 
-                placeholder={newTask.target_type === 'team' ? "מספר צוות (למשל 3)" : "מספר אישי של צוער"}
-                className="bg-white/50 border border-slate-200 rounded-lg px-3 py-2 text-sm flex-1"
-                required
-                value={newTask.target_value || ''}
-                onChange={e => setNewTask({...newTask, target_value: e.target.value})}
+                placeholder="מה המשימה?" 
+                className="w-full bg-white/50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                value={newTask.title}
+                onChange={e => setNewTask({...newTask, title: e.target.value})}
               />
+            </div>
+            {isStaff && (
+              <div className="w-1/3">
+                <label className="block text-xs font-semibold text-slate-500 mb-1">סוג</label>
+                <select
+                  className="w-full bg-white/50 border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                  value={newTask.task_category}
+                  onChange={e => setNewTask({...newTask, task_category: e.target.value})}
+                >
+                  <option value="כללי">כללי</option>
+                  <option value="טופס">טופס</option>
+                  <option value="מטלה">מטלה / קריאה</option>
+                </select>
+              </div>
             )}
           </div>
-          <button type="submit" className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 rounded-lg mt-1 transition-colors">
-            הקצה משימה
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1">פירוט (אופציונלי)</label>
+            <textarea 
+              placeholder="הנחיות נוספות לביצוע המשימה..." 
+              className="w-full bg-white/50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none h-16"
+              value={newTask.description}
+              onChange={e => setNewTask({...newTask, description: e.target.value})}
+            />
+          </div>
+
+          {isStaff && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1 flex items-center gap-1"><Link2 size={12}/> קישור מצורף (אופציונלי)</label>
+              <input 
+                type="url" 
+                placeholder="https://forms.google.com/..." 
+                className="w-full bg-white/50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                value={newTask.link_url}
+                onChange={e => setNewTask({...newTask, link_url: e.target.value})}
+              />
+            </div>
+          )}
+
+          {isStaff && (
+            <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+              <label className="block text-xs font-semibold text-slate-600 mb-2">קהל יעד</label>
+              <div className="flex flex-col gap-3">
+                <select 
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                  value={newTask.target_type}
+                  onChange={e => setNewTask({...newTask, target_type: e.target.value as any, target_value: e.target.value === 'all' ? null : profile.personal_id})}
+                >
+                  <option value="all">כלל ההשלמה</option>
+                  <option value="teams">צוותים ספציפיים</option>
+                  <option value="team">צוות בודד</option>
+                  <option value="individual">צוער ספציפי (לפי מס' אישי)</option>
+                </select>
+
+                {newTask.target_type === 'teams' && (
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {uniqueTeams.map(team => (
+                      <button
+                        key={team}
+                        type="button"
+                        onClick={() => toggleTeamSelection(team)}
+                        className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${
+                          newTask.selectedTeams.includes(team) 
+                            ? 'bg-indigo-500 text-white shadow-sm' 
+                            : 'bg-white text-slate-600 border border-slate-200 hover:border-indigo-300'
+                        }`}
+                      >
+                        צוות {team}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {(newTask.target_type === 'team' || newTask.target_type === 'individual') && (
+                  <input 
+                    type="text" 
+                    placeholder={newTask.target_type === 'team' ? "הזן מספר צוות (למשל: 3)" : "הזן מספר אישי מלא של צוער"}
+                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                    required
+                    value={newTask.target_value || ''}
+                    onChange={e => setNewTask({...newTask, target_value: e.target.value})}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          <button type="submit" className={`text-white font-bold py-2.5 rounded-xl transition-all shadow-md active:scale-95 ${
+            isStaff ? 'bg-indigo-500 hover:bg-indigo-600' : 'bg-orange-500 hover:bg-orange-600'
+          }`}>
+            {isStaff ? 'הפץ משימה' : 'שמור משימה אישית'}
           </button>
         </form>
       )}
 
-      <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2">
+      <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2 pb-12">
         {myActiveTasks.length === 0 ? (
           <div className="text-center py-10 text-slate-400 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-            <CheckCircle className="mx-auto mb-2 opacity-50" size={32} />
-            <p>אין לך משימות פתוחות כרגע!</p>
+            <CheckCircle className="mx-auto mb-3 opacity-50 text-emerald-400" size={42} />
+            <p className="font-medium text-slate-600">אין לך משימות פתוחות כרגע!</p>
+            <p className="text-sm mt-1">אתה יכול לנוח או להוסיף משימה אישית משלך.</p>
           </div>
         ) : (
           myActiveTasks.map(task => (
-            <div key={task.id} className="glass-card p-4 rounded-2xl border-r-4 border-r-orange-400 flex gap-3 group">
+            <div key={task.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex gap-4 group hover:shadow-md transition-shadow relative overflow-hidden">
+              <div className={`absolute top-0 left-0 w-1.5 h-full ${
+                task.target_type === 'individual' && task.creator_id === myCadet?.cadet_id ? 'bg-orange-400' : 'bg-indigo-400'
+              }`} />
+              
               <button 
                 onClick={() => handleComplete(task.id)}
-                className="text-slate-300 hover:text-emerald-500 transition-colors shrink-0 mt-0.5"
+                className="text-slate-200 hover:text-emerald-500 transition-colors shrink-0 mt-0.5"
                 title="סמן כבוצע"
               >
-                <Circle size={22} className="group-hover:hidden" />
-                <CheckCircle size={22} className="hidden group-hover:block" />
+                <Circle size={26} className="group-hover:hidden text-slate-300" />
+                <CheckCircle size={26} className="hidden group-hover:block drop-shadow-sm" />
               </button>
+              
               <div className="flex-1">
-                <h4 className="font-bold text-slate-800">{task.title}</h4>
-                {task.description && (
-                  <p className="text-xs text-slate-500 mt-1">{task.description}</p>
-                )}
-                <div className="flex items-center gap-3 mt-3 text-[10px] font-medium text-slate-400">
-                  <span className="bg-slate-100 px-2 py-0.5 rounded-full">
-                    {task.target_type === 'all' ? 'כלל ההשלמה' : task.target_type === 'team' ? `צוות ${task.target_value}` : 'אישי'}
-                  </span>
-                  {task.deadline && (
-                    <span className="flex items-center gap-1 text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
-                      <CalendarClock size={12} /> {new Date(task.deadline).toLocaleDateString('he-IL')}
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="font-bold text-slate-800 text-base">{task.title}</h4>
+                  {task.task_category && task.task_category !== 'כללי' && (
+                    <span className="flex items-center gap-1 bg-slate-50 border border-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                      {getCategoryIcon(task.task_category)}
+                      {task.task_category}
                     </span>
+                  )}
+                </div>
+
+                {task.description && (
+                  <p className="text-sm text-slate-500 mt-1 leading-relaxed bg-slate-50/50 p-2 rounded-lg border border-slate-50">{task.description}</p>
+                )}
+                
+                {task.link_url && (
+                  <a 
+                    href={task.link_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                  >
+                    <ExternalLink size={14} /> פתח קישור מצורף
+                  </a>
+                )}
+
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-4 text-[10px] font-medium text-slate-400 border-t border-slate-100 pt-3">
+                  {task.creator_name ? (
+                    <span className="text-slate-500">נפתח ע״י {task.creator_name} {task.creator_role && `(${task.creator_role})`}</span>
+                  ) : (
+                    <span>מערכת השלמה</span>
+                  )}
+                  
+                  <div className="w-1 h-1 rounded-full bg-slate-200" />
+                  
+                  <span className="bg-slate-100 px-2 py-0.5 rounded-full text-slate-500">
+                    {task.target_type === 'all' ? 'כלל ההשלמה' : 
+                     task.target_type === 'teams' ? `צוותים ספציפיים` :
+                     task.target_type === 'team' ? `צוות ${task.target_value}` : 'אישי'}
+                  </span>
+                  
+                  {task.deadline && (
+                    <>
+                      <div className="w-1 h-1 rounded-full bg-slate-200" />
+                      <span className="flex items-center gap-1 text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
+                        <CalendarClock size={12} /> {new Date(task.deadline).toLocaleDateString('he-IL')}
+                      </span>
+                    </>
                   )}
                 </div>
               </div>
