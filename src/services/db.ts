@@ -254,3 +254,26 @@ export const submitRollCallResponse = async (rollCallId: string, cadetId: string
     .upsert({ roll_call_id: rollCallId, cadet_id: cadetId, status: 'present' }, { onConflict: 'roll_call_id,cadet_id' });
   if (error) handleSupabaseError(error, 'submitRollCallResponse');
 };
+
+// System Settings
+export const fetchSystemSetting = async (key: string): Promise<any> => {
+  const { data, error } = await supabase
+    .from('system_settings')
+    .select('value')
+    .eq('key', key)
+    .maybeSingle();
+    
+  if (error) {
+    console.error(`Error fetching setting ${key}:`, error);
+    return null;
+  }
+  return data?.value ?? null;
+};
+
+export const updateSystemSetting = async (key: string, value: any) => {
+  const { error } = await supabase
+    .from('system_settings')
+    .upsert({ key, value, updated_at: new Date().toISOString() });
+    
+  if (error) handleSupabaseError(error, 'updateSystemSetting');
+};

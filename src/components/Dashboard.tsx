@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft, ChevronRight, Edit3, MessageCircle, Gift, Loader2, ListTodo, ShieldCheck } from 'lucide-react';
 import type { UserProfile, CalendarEvent, Cadet, AttendanceLog } from '../types';
 import { fetchTodayEvents } from '../services/calendar';
-import { fetchCadets, fetchAttendanceForEvent, upsertAttendance, cleanupOldAttendance, fetchActiveRollCalls } from '../services/db';
+import { fetchCadets, fetchAttendanceForEvent, upsertAttendance, cleanupOldAttendance, fetchActiveRollCalls, fetchSystemSetting, updateSystemSetting } from '../services/db';
 import { getWhatsAppLink } from '../utils';
 import LoadingSpinner from './LoadingSpinner';
 import TaskManager from './TaskManager';
@@ -25,6 +25,7 @@ export default function Dashboard({ profile }: Props) {
   
   const [activeView, setActiveView] = useState<'tasks' | 'schedule' | 'mifkad'>(['מפק"צ', 'סמק"ס', 'מק"ס'].includes(normalizedRole) ? 'schedule' : 'tasks');
   const [hasActiveRollCalls, setHasActiveRollCalls] = useState(false);
+  const [tasksEnabled, setTasksEnabled] = useState(true);
   const [attendance, setAttendance] = useState<AttendanceLog[]>([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
   const [mahamEditMode, setMahamEditMode] = useState(false);
@@ -60,15 +61,17 @@ export default function Dashboard({ profile }: Props) {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [evts, cdts, _, rollCalls] = await Promise.all([
+      const [evts, cdts, _, rollCalls, initialTasksEnabled] = await Promise.all([
         fetchTodayEvents(),
         fetchCadets(),
         cleanupOldAttendance(),
-        fetchActiveRollCalls()
+        fetchActiveRollCalls(),
+        fetchSystemSetting('tasks_tab_enabled')
       ]);
       setEvents(evts);
       setCadets(cdts);
       setHasActiveRollCalls(rollCalls.length > 0);
+      setTasksEnabled(initialTasksEnabled !== false); // default true if null
       setError(null);
 
       // Auto-open current event for Mammash / Maham
@@ -148,12 +151,18 @@ export default function Dashboard({ profile }: Props) {
     }
   };
 
-  // Real-time polling for active roll calls - always running, for all users
+  // Real-time polling for active roll calls and settings - always running, for all users
   useEffect(() => {
-    const pollRollCalls = async () => {
+    const pollGlobals = async () => {
       try {
-        const rollCalls = await fetchActiveRollCalls();
+        const [rollCalls, isTasksEnabled] = await Promise.all([
+          fetchActiveRollCalls(),
+          fetchSystemSetting('tasks_tab_enabled')
+        ]);
+        
         setHasActiveRollCalls(rollCalls.length > 0);
+        setTasksEnabled(isTasksEnabled !== false);
+        
         // If user is on mifkad tab and roll call was closed (and not maham), redirect them out
         if (rollCalls.length === 0 && activeView === 'mifkad' && normalizedRole !== 'מה"מ') {
           setActiveView(normalizedRole === 'צוער' ? 'tasks' : 'schedule');
@@ -162,8 +171,8 @@ export default function Dashboard({ profile }: Props) {
     };
 
     // Poll immediately on mount, then every 5 seconds
-    pollRollCalls();
-    const intervalId = setInterval(pollRollCalls, 5000);
+    pollGlobals();
+    const intervalId = setInterval(pollGlobals, 5000);
     return () => clearInterval(intervalId);
   }, [activeView, normalizedRole]);
 
@@ -713,7 +722,14 @@ export default function Dashboard({ profile }: Props) {
       <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pb-32 md:pb-8">
         {activeView === 'tasks' ? (
           <div className="h-full flex flex-col gap-6">
-            <TaskManager profile={profile} />
+            {!tasksEnabled && normalizedRole !== 'מה"מ' ? (
+              <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 flex flex-col items-center justify-center">
+                <ListTodo size={48} className="mx-auto text-slate-300 mb-4" />
+                <p className="text-slate-500 font-medium">לא הוגדרו משימות למילוי כרגע</p>
+              </div>
+            ) : (
+              <TaskManager profile={profile} />
+            )}
           </div>
         ) : activeView === 'schedule' ? (
           <div className="flex flex-col h-full pr-2">
@@ -724,6 +740,19 @@ export default function Dashboard({ profile }: Props) {
                   {events.length} אירועים היום מתוך Google Calendar
                 </p>
               </div>
+              {normalizedRole === 'מה"מ' && (
+                <button
+                  onClick={async () => {
+                    const newValue = !tasksEnabled;
+                    setTasksEnabled(newValue);
+                    await updateSystemSetting('tasks_tab_enabled', newValue);
+                  }}
+                  className={`px-4 py-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border ${tasksEnabled ? 'bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                >
+                  <ListTodo size={18} />
+                  {tasksEnabled ? 'משימות: פעיל' : 'משימות: מושבת'}
+                </button>
+              )}
             </header>
 
       {events.length === 0 && !error ? (
@@ -790,7 +819,7 @@ export default function Dashboard({ profile }: Props) {
 
       {(normalizedRole === 'מפק"צ' || normalizedRole === 'סמק"ס' || normalizedRole === 'מק"ס' || normalizedRole === 'ממ"ש' || normalizedRole === 'מה"מ') && (
         <div className="fixed bottom-4 left-4 right-4 z-40 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
-          {(normalizedRole === 'ממ"ש' || normalizedRole === 'מה"מ') && (
+          {(normalizedRole === 'מה"מ' || (normalizedRole === 'ממ"ש' && tasksEnabled)) && (
             <button 
               onClick={() => setActiveView('tasks')}
               className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'tasks' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
