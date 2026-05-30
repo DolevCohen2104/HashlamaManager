@@ -45,7 +45,7 @@ export default function Login({ onLoginComplete }: Props) {
         
         <h1 className="text-3xl font-black text-slate-800 mb-2 text-center z-10">ניהול השלמה</h1>
         <p className="text-slate-500 text-center mb-10 z-10 font-medium">
-          מערכת חכמה לניהול לו"ז ומצבה
+          מחזור 020
         </p>
 
           <form onSubmit={handleLogin} className="w-full flex flex-col gap-5 z-10">

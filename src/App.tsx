@@ -97,7 +97,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto w-full z-10 relative">
+      <main className="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto w-full">
         {activeTab === 'dashboard' && <Dashboard profile={profile} />}
         {activeTab === 'directory' && <CadetDirectory profile={profile} />}
         {activeTab === 'birthdays' && <Birthdays />}
