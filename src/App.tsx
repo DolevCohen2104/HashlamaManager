@@ -12,6 +12,7 @@ import OmniSearch from './components/OmniSearch';
 import ServiceRequestForm from './components/ServiceRequestForm';
 import LeaveRequestForm from './components/LeaveRequestForm';
 import MaintenanceRequestForm from './components/MaintenanceRequestForm';
+import ServiceRequestsManager from './components/ServiceRequestsManager';
 import LoadingSpinner from './components/LoadingSpinner';
 import { formatRole } from './utils';
 
@@ -66,7 +67,7 @@ export default function App() {
           </div>
           
           <div className="mb-6">
-            <OmniSearch onSelect={setActiveTab} userRole={profile.role} />
+            <OmniSearch onSelect={setActiveTab} userRole={profile.role} specificRole={profile.specific_role} />
           </div>
         </div>
         <div className="bg-slate-800/50 backdrop-blur-md border border-white/5 p-4 rounded-2xl text-center text-sm shadow-inner mt-8">
@@ -95,7 +96,7 @@ export default function App() {
         </div>
         
         <div className="px-4 pb-4">
-          <OmniSearch onSelect={setActiveTab} userRole={profile.role} />
+          <OmniSearch onSelect={setActiveTab} userRole={profile.role} specificRole={profile.specific_role} />
         </div>
       </header>
 
@@ -124,6 +125,16 @@ export default function App() {
         {activeTab === 'leave' && (
           <LeaveRequestForm
             profile={profile}
+            onClose={() => setActiveTab('dashboard')}
+          />
+        )}
+
+        {/* Management Screens */}
+        {['manage_maintenance', 'manage_clinic', 'manage_leave'].includes(activeTab) && (
+          <ServiceRequestsManager
+            profile={profile}
+            filterType={activeTab.replace('manage_', '') as any}
+            teamFilter={activeTab === 'manage_leave' && profile.role !== 'מה"מ' ? profile.team_number : 'all'}
             onClose={() => setActiveTab('dashboard')}
           />
         )}

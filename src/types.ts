@@ -2,6 +2,7 @@ export interface UserProfile {
   personal_id: string;
   full_name: string;
   role: string;
+  specific_role?: string;
   team_number: string | null;
   gender?: 'זכר' | 'נקבה';
 }

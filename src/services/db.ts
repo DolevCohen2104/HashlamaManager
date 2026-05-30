@@ -115,17 +115,31 @@ export const createTask = async (task: any) => {
 };
 
 // Service Requests
-export const fetchServiceRequests = async (): Promise<any[]> => {
-  const { data, error } = await supabase
+export const fetchServiceRequests = async (type?: string): Promise<any[]> => {
+  let query = supabase
     .from('service_requests')
     .select('*')
     .order('created_at', { ascending: false });
+
+  if (type) {
+    query = query.eq('type', type);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     handleSupabaseError(error, 'fetchServiceRequests');
     return [];
   }
   return data || [];
+};
+
+export const updateServiceRequestStatus = async (id: string, status: string) => {
+  const { error } = await supabase
+    .from('service_requests')
+    .update({ status })
+    .eq('id', id);
+  if (error) handleSupabaseError(error, 'updateServiceRequestStatus');
 };
 
 export const submitServiceRequest = async (request: any) => {
