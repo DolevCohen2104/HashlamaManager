@@ -828,8 +828,15 @@ export default function Dashboard({ profile }: Props) {
         </div>
       )}
 
-      {(normalizedRole === 'מפק"צ' || normalizedRole === 'סמק"ס' || normalizedRole === 'מק"ס' || normalizedRole === 'ממ"ש' || normalizedRole === 'מה"מ') && (
-        <div className="fixed bottom-4 left-4 right-4 z-40 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
+      {(() => {
+        const hasTasksTab = normalizedRole === 'מה"מ' || (normalizedRole === 'ממ"ש' && tasksEnabled);
+        const hasMifkadTab = normalizedRole === 'מה"מ' || (normalizedRole === 'ממ"ש' && hasActiveRollCalls);
+        const hasMultipleTabs = hasTasksTab || hasMifkadTab;
+
+        if (!hasMultipleTabs) return null;
+
+        return (
+          <div className="fixed bottom-4 left-4 right-4 z-40 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
           {(normalizedRole === 'מה"מ' || (normalizedRole === 'ממ"ש' && tasksEnabled)) && (
             <button 
               onClick={() => setActiveView('tasks')}
@@ -853,7 +860,8 @@ export default function Dashboard({ profile }: Props) {
             </button>
           )}
         </div>
-      )}
+        );
+      })()}
 
       {!isMammash && !isCadet && selectedEventId && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-start pt-28 pb-8 px-4 overflow-y-auto">
