@@ -35,3 +35,30 @@ export interface CalendarEvent {
   end: string;
   location: string;
 }
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  creator_id: string;
+  target_type: 'individual' | 'team' | 'all';
+  target_value: string | null;
+  created_at: string;
+  deadline: string | null;
+}
+
+export interface TaskCompletion {
+  id: string;
+  task_id: string;
+  cadet_id: string;
+  completed_at: string;
+}
+
+export interface ServiceRequest {
+  id: string;
+  cadet_id: string;
+  type: 'maintenance' | 'leave' | 'clinic';
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  details: any;
+  created_at: string;
+}

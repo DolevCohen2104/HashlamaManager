@@ -8,6 +8,8 @@ import CadetDirectory from './components/CadetDirectory';
 import ExportData from './components/ExportData';
 import Birthdays from './components/Birthdays';
 import Roles from './components/Roles';
+import OmniSearch from './components/OmniSearch';
+import ServiceRequestForm from './components/ServiceRequestForm';
 import LoadingSpinner from './components/LoadingSpinner';
 import { formatRole } from './utils';
 
@@ -16,7 +18,7 @@ export default function App() {
   const [needsAuth, setNeedsAuth] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'directory' | 'birthdays' | 'roles' | 'export'>('dashboard');
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
 
   useEffect(() => {
     const unsubscribe = initAuth(
@@ -56,55 +58,16 @@ export default function App() {
     <div dir="rtl" className="h-[100dvh] w-full bg-mesh text-[#1E293B] font-sans flex flex-col md:flex-row overflow-hidden relative">
       <aside className="hidden md:flex flex-col justify-between w-[260px] m-4 mr-4 bg-slate-900/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl p-6 text-white shrink-0 z-20">
         <div>
-          <div className="mb-8 flex items-center gap-3">
+          <div className="mb-8 flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
              <img src="/tikshuv.png" alt="תקשוב" className="w-10 h-10 object-contain drop-shadow-sm" />
              <h1 className="text-xl font-bold tracking-tight">ניהול השלמה</h1>
           </div>
-          <nav>
-            <div 
-              onClick={() => setActiveTab('dashboard')}
-              className={`flex items-center p-3 rounded-lg mb-2 cursor-pointer transition-colors ${activeTab === 'dashboard' ? 'bg-slate-700 border-r-4 border-sky-400' : 'hover:bg-slate-800'}`}
-            >
-              <LayoutDashboard size={20} className="ml-3 opacity-70" />
-              <span>לו"ז יומי</span>
-            </div>
-            
-            <div 
-              onClick={() => setActiveTab('directory')}
-              className={`flex items-center p-3 rounded-lg mb-2 cursor-pointer transition-colors ${activeTab === 'directory' ? 'bg-slate-700 border-r-4 border-sky-400' : 'hover:bg-slate-800'}`}
-            >
-              <Users size={20} className="ml-3 opacity-70" />
-              <span>ספר השלמה</span>
-            </div>
-
-            <div 
-              onClick={() => setActiveTab('birthdays')}
-              className={`flex items-center p-3 rounded-lg mb-2 cursor-pointer transition-colors ${activeTab === 'birthdays' ? 'bg-slate-700 border-r-4 border-sky-400' : 'hover:bg-slate-800'}`}
-            >
-              <Gift size={20} className="ml-3 opacity-70" />
-              <span>ימי הולדת</span>
-            </div>
-
-            <div 
-              onClick={() => setActiveTab('roles')}
-              className={`flex items-center p-3 rounded-lg mb-2 cursor-pointer transition-colors ${activeTab === 'roles' ? 'bg-slate-700 border-r-4 border-sky-400' : 'hover:bg-slate-800'}`}
-            >
-              <Network size={20} className="ml-3 opacity-70" />
-              <span>תפקידי רוחב</span>
-            </div>
-            
-            {profile.role !== 'צוער' && (
-              <div 
-                onClick={() => setActiveTab('export')}
-                className={`flex items-center p-3 rounded-lg mb-2 cursor-pointer transition-colors ${activeTab === 'export' ? 'bg-slate-700 border-r-4 border-sky-400' : 'hover:bg-slate-800'}`}
-              >
-                <Download size={20} className="ml-3 opacity-70" />
-                <span>ייצוא נתונים</span>
-              </div>
-            )}
-          </nav>
+          
+          <div className="mb-6">
+            <OmniSearch onSelect={setActiveTab} userRole={profile.role} />
+          </div>
         </div>
-        <div className="bg-slate-800/50 backdrop-blur-md border border-white/5 p-4 rounded-2xl text-center text-sm shadow-inner">
+        <div className="bg-slate-800/50 backdrop-blur-md border border-white/5 p-4 rounded-2xl text-center text-sm shadow-inner mt-8">
            <p className="opacity-60 mb-1">משתמש נוכחי:</p>
            <p className="font-semibold text-sky-100">{profile.full_name}</p>
            <p className="text-xs text-slate-400">({profile.role === 'ממ"ש' && profile.team_number ? `${formatRole(profile.role, profile.gender)} צוות ${profile.team_number}` : formatRole(profile.role, profile.gender)})</p>
@@ -115,62 +78,39 @@ export default function App() {
       </aside>
 
       {/* Mobile Nav Header */}
-      <header className="md:hidden flex-none h-16 bg-slate-900/95 backdrop-blur-xl text-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-b border-white/10 px-4 flex items-center justify-between z-40 relative shrink-0">
-        <div className="flex items-center gap-3">
-          <img src="/tikshuv.png" alt="תקשוב" className="w-8 h-8 object-contain shrink-0 drop-shadow-sm" />
-          <div>
-            <h1 className="font-bold text-sm leading-tight">ניהול השלמה</h1>
-            <p className="text-xs text-slate-400 leading-tight">
-              {profile.full_name}
-              {profile.role && <span className="mr-1 text-sky-400">• {profile.role === 'ממ"ש' && profile.team_number ? `${formatRole(profile.role, profile.gender)} צוות ${profile.team_number}` : formatRole(profile.role, profile.gender)}</span>}
-            </p>
+      <header className="md:hidden flex-none bg-slate-900/95 backdrop-blur-xl text-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-b border-white/10 z-40 relative shrink-0">
+        <div className="flex items-center justify-between p-4 pb-2">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
+            <img src="/tikshuv.png" alt="תקשוב" className="w-8 h-8 object-contain shrink-0 drop-shadow-sm" />
+            <div>
+              <h1 className="font-bold text-sm leading-tight">ניהול השלמה</h1>
+              <p className="text-xs text-slate-400 leading-tight">
+                {profile.full_name}
+              </p>
+            </div>
           </div>
+          <button onClick={handleLogout} className="text-rose-400 p-2"><LogOut size={20}/></button>
         </div>
-        <button onClick={handleLogout} className="text-red-400 p-2"><LogOut size={20}/></button>
+        
+        <div className="px-4 pb-4">
+          <OmniSearch onSelect={setActiveTab} userRole={profile.role} />
+        </div>
       </header>
-      
-      {/* Mobile Tabs - Fixed at bottom */}
-      <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
-        <button 
-          onClick={() => setActiveTab('dashboard')}
-          className={`flex-1 py-3 px-1 text-[10px] font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeTab === 'dashboard' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
-        >
-          <LayoutDashboard size={20} className={activeTab === 'dashboard' ? 'drop-shadow-sm' : ''} /> לו"ז יומי
-        </button>
-        <button 
-          onClick={() => setActiveTab('directory')}
-          className={`flex-1 py-3 px-1 text-[10px] font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeTab === 'directory' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
-        >
-          <Users size={20} className={activeTab === 'directory' ? 'drop-shadow-sm' : ''} /> ספר השלמה
-        </button>
-        <button 
-          onClick={() => setActiveTab('birthdays')}
-          className={`flex-1 py-3 px-1 text-[10px] font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeTab === 'birthdays' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
-        >
-          <Gift size={20} className={activeTab === 'birthdays' ? 'drop-shadow-sm' : ''} /> ימי הולדת
-        </button>
-        <button 
-          onClick={() => setActiveTab('roles')}
-          className={`flex-1 py-3 px-1 text-[10px] font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeTab === 'roles' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
-        >
-          <Network size={20} className={activeTab === 'roles' ? 'drop-shadow-sm' : ''} /> תפקידים
-        </button>
-        {profile.role !== 'צוער' && (
-          <button 
-            onClick={() => setActiveTab('export')}
-            className={`flex-1 py-3 px-1 text-[10px] font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeTab === 'export' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
-          >
-            <Download size={20} className={activeTab === 'export' ? 'drop-shadow-sm' : ''} /> ייצוא
-          </button>
-        )}
-      </nav>
 
-      <main className="flex-1 flex flex-col p-4 md:p-8 pb-32 md:pb-8 overflow-y-auto w-full z-10 relative">
+      <main className="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto w-full z-10 relative">
         {activeTab === 'dashboard' && <Dashboard profile={profile} />}
         {activeTab === 'directory' && <CadetDirectory profile={profile} />}
         {activeTab === 'birthdays' && <Birthdays />}
         {activeTab === 'roles' && <Roles />}
         {activeTab === 'export' && <ExportData profile={profile} />}
+        
+        {['maintenance', 'leave', 'clinic'].includes(activeTab) && (
+          <ServiceRequestForm 
+            profile={profile} 
+            type={activeTab as any} 
+            onClose={() => setActiveTab('dashboard')} 
+          />
+        )}
       </main>
     </div>
   );

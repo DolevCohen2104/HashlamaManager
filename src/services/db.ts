@@ -54,15 +54,83 @@ export const fetchAttendanceForEvent = async (eventId: string): Promise<Attendan
   return data as AttendanceLog[];
 };
 
-export const upsertAttendance = async (log: Omit<AttendanceLog, 'log_id'>, _existingId?: string) => {
-  // Use Supabase native upsert with onConflict so it always works,
-  // even if we only have a temp log_id in local state.
-  const { error } = await supabase
-    .from('attendance_logs')
-    .upsert(
-      { ...log, updated_at: new Date().toISOString() },
-      { onConflict: 'event_id,cadet_id' }
-    );
-  if (error) handleSupabaseError(error, 'upsertAttendance');
+export const upsertAttendance = async (log: Omit<AttendanceLog, 'log_id' | 'updated_at'>, existingLogId?: string) => {
+  const payload = {
+    ...log,
+    updated_at: new Date().toISOString()
+  };
+
+  if (existingLogId) {
+    const { error } = await supabase
+      .from('attendance_logs')
+      .update(payload)
+      .eq('log_id', existingLogId);
+    if (error) handleSupabaseError(error, 'upsertAttendance (update)');
+  } else {
+    const { error } = await supabase
+      .from('attendance_logs')
+      .insert(payload);
+    if (error) handleSupabaseError(error, 'upsertAttendance (insert)');
+  }
 };
 
+// Tasks
+export const fetchTasks = async (): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    handleSupabaseError(error, 'fetchTasks');
+    return [];
+  }
+  return data || [];
+};
+
+export const fetchTaskCompletions = async (): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from('task_completions')
+    .select('*');
+
+  if (error) {
+    handleSupabaseError(error, 'fetchTaskCompletions');
+    return [];
+  }
+  return data || [];
+};
+
+export const completeTask = async (taskId: string, cadetId: string) => {
+  const { error } = await supabase
+    .from('task_completions')
+    .insert({ task_id: taskId, cadet_id: cadetId });
+  if (error) handleSupabaseError(error, 'completeTask');
+};
+
+export const createTask = async (task: any) => {
+  const { error } = await supabase
+    .from('tasks')
+    .insert(task);
+  if (error) handleSupabaseError(error, 'createTask');
+};
+
+// Service Requests
+export const fetchServiceRequests = async (): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from('service_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    handleSupabaseError(error, 'fetchServiceRequests');
+    return [];
+  }
+  return data || [];
+};
+
+export const submitServiceRequest = async (request: any) => {
+  const { error } = await supabase
+    .from('service_requests')
+    .insert(request);
+  if (error) handleSupabaseError(error, 'submitServiceRequest');
+};

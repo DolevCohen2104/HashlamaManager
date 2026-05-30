@@ -5,6 +5,7 @@ import { fetchTodayEvents } from '../services/calendar';
 import { fetchCadets, fetchAttendanceForEvent, upsertAttendance } from '../services/db';
 import { getWhatsAppLink } from '../utils';
 import LoadingSpinner from './LoadingSpinner';
+import TaskManager from './TaskManager';
 
 interface Props {
   profile: UserProfile;
@@ -629,6 +630,9 @@ export default function Dashboard({ profile }: Props) {
         </div>
       )}
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+        <div className="lg:col-span-2 flex flex-col h-full overflow-y-auto pr-2">
+
       {/* Birthday Alert Banner */}
       {(() => {
         const today = new Date();
@@ -707,6 +711,13 @@ export default function Dashboard({ profile }: Props) {
           ))}
         </div>
       )}
+      </div>
+
+      {/* Task Manager Pane */}
+      <div className="lg:col-span-1 border-t-2 lg:border-t-0 lg:border-r-2 border-slate-100 pt-6 lg:pt-0 lg:pr-6 flex flex-col h-full min-h-[400px]">
+        <TaskManager profile={profile} />
+      </div>
+    </div>
 
       {!isMammash && !isCadet && selectedEventId && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 pt-8 pb-20">
