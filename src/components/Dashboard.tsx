@@ -148,21 +148,30 @@ export default function Dashboard({ profile }: Props) {
     }
   };
 
+  // Real-time polling for active roll calls - always running, for all users
+  useEffect(() => {
+    const pollRollCalls = async () => {
+      try {
+        const rollCalls = await fetchActiveRollCalls();
+        setHasActiveRollCalls(rollCalls.length > 0);
+        // If user is on mifkad tab and roll call was closed (and not maham), redirect them out
+        if (rollCalls.length === 0 && activeView === 'mifkad' && normalizedRole !== 'מה"מ') {
+          setActiveView(normalizedRole === 'צוער' ? 'tasks' : 'schedule');
+        }
+      } catch (err) {}
+    };
+
+    // Poll immediately on mount, then every 5 seconds
+    pollRollCalls();
+    const intervalId = setInterval(pollRollCalls, 5000);
+    return () => clearInterval(intervalId);
+  }, [activeView, normalizedRole]);
+
   // Real-time polling for the currently viewed attendance
   useEffect(() => {
     if (!selectedEventId) return;
 
     const intervalId = setInterval(async () => {
-      // Background poll for active roll calls
-      try {
-        const rollCalls = await fetchActiveRollCalls();
-        setHasActiveRollCalls(rollCalls.length > 0);
-        // If they are on mifkad tab and there's no active roll calls (and not maham), boot them out
-        if (rollCalls.length === 0 && activeView === 'mifkad' && normalizedRole !== 'מה"מ') {
-          setActiveView(normalizedRole === 'צוער' ? 'tasks' : 'schedule');
-        }
-      } catch (err) {}
-
       // Skip update if there are pending local changes (typing a reason)
       if (Object.keys(debounceTimers.current).length > 0) return;
       
