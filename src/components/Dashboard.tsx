@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, MapPin, Users, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronLeft, ChevronRight, Edit3, MessageCircle, Gift, Loader2, ListTodo, ShieldCheck } from 'lucide-react';
 import type { UserProfile, CalendarEvent, Cadet, AttendanceLog } from '../types';
 import { fetchTodayEvents } from '../services/calendar';
-import { fetchCadets, fetchAttendanceForEvent, upsertAttendance, cleanupOldAttendance } from '../services/db';
+import { fetchCadets, fetchAttendanceForEvent, upsertAttendance, cleanupOldAttendance, fetchActiveRollCalls } from '../services/db';
 import { getWhatsAppLink } from '../utils';
 import LoadingSpinner from './LoadingSpinner';
 import TaskManager from './TaskManager';
