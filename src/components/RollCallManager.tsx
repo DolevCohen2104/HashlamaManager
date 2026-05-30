@@ -100,45 +100,37 @@ export default function RollCallManager({ profile, cadets }: Props) {
 
   const renderResponseSection = () => {
     if (!isIncludedInRollCall || rollCalls.length === 0) return null;
+    
+    const unrespondedCalls = rollCalls.filter(call => {
+      const callResponses = responses[call.id] || [];
+      return !callResponses.some(r => r.cadet_id === profile.personal_id);
+    });
+
+    if (unrespondedCalls.length === 0) return null;
+
     return (
       <div className="w-full flex flex-col gap-4 animate-fade-in mb-8">
         <h2 className="text-xl font-black text-slate-800 mb-2 px-2">נדרש מענה שלך</h2>
-        {rollCalls.map(call => {
-          const callResponses = responses[call.id] || [];
-          const hasResponded = callResponses.some(r => r.cadet_id === profile.personal_id);
-
+        {unrespondedCalls.map(call => {
           return (
-            <div key={call.id} className={`rounded-3xl p-6 shadow-xl border overflow-hidden relative ${
-              hasResponded ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-sky-100'
-            }`}>
-              {hasResponded && (
-                <div className="absolute top-0 right-0 bg-emerald-500 text-white px-4 py-1 rounded-bl-xl font-bold text-sm shadow-sm flex items-center gap-1">
-                  <Check size={14} /> אושר
-                </div>
-              )}
+            <div key={call.id} className="rounded-3xl p-6 shadow-xl border overflow-hidden relative bg-white border-sky-100">
               <div className="flex items-center gap-4 mb-4 mt-2">
-                <div className={`p-4 rounded-2xl ${hasResponded ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-500'}`}>
+                <div className="p-4 rounded-2xl bg-sky-100 text-sky-500">
                   {call.type === 'home' ? <Home size={32} /> : call.type === 'base' ? <MapPin size={32} /> : <ShieldCheck size={32} />}
                 </div>
                 <div>
-                  <h3 className={`text-xl font-black ${hasResponded ? 'text-emerald-900' : 'text-slate-800'}`}>{call.title}</h3>
+                  <h3 className="text-xl font-black text-slate-800">{call.title}</h3>
                   <p className="text-sm text-slate-500">{new Date(call.created_at).toLocaleString('he-IL')}</p>
                 </div>
               </div>
 
-              {!hasResponded ? (
-                <button
-                  onClick={() => handleCadetSubmit(call.id)}
-                  disabled={submitting === call.id}
-                  className="w-full bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-black text-lg py-4 rounded-2xl shadow-md shadow-sky-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                >
-                  {submitting === call.id ? <Loader2 className="w-6 h-6 animate-spin" /> : 'אשר נוכחות / הגעה'}
-                </button>
-              ) : (
-                <div className="w-full bg-emerald-100/50 text-emerald-700 font-bold text-center py-4 rounded-2xl flex items-center justify-center gap-2">
-                  הנוכחות שלך נרשמה בהצלחה!
-                </div>
-              )}
+              <button
+                onClick={() => handleCadetSubmit(call.id)}
+                disabled={submitting === call.id}
+                className="w-full bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-black text-lg py-4 rounded-2xl shadow-md shadow-sky-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                {submitting === call.id ? <Loader2 className="w-6 h-6 animate-spin" /> : 'אשר נוכחות / הגעה'}
+              </button>
             </div>
           );
         })}
