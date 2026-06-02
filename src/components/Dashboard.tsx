@@ -868,17 +868,20 @@ export default function Dashboard({ profile }: Props) {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-start pt-28 pb-8 px-4 overflow-y-auto">
           <div className="bg-white my-auto w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh]">
             <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center gap-3 shrink-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 {mahamEditMode && editingTeam && (
                   <button 
                     onClick={() => setEditingTeam(null)}
-                    className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-200 rounded-lg transition-colors ml-1"
+                    className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-200 rounded-lg transition-colors ml-1 shrink-0"
                     title="חזור לרשימת הצוותים"
                   >
                     <ChevronRight size={22} />
                   </button>
                 )}
-                <h3 className="font-bold text-lg text-slate-800 truncate">
+                <h3 
+                  className="font-bold text-lg text-slate-800 truncate"
+                  title={`מצבת נוכחות – ${events.find(e => e.id === selectedEventId)?.summary || ''}`}
+                >
                   מצבת נוכחות – {events.find(e => e.id === selectedEventId)?.summary}
                 </h3>
               </div>
