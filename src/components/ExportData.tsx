@@ -29,7 +29,7 @@ export default function ExportData({ profile }: Props) {
 
   const loadData = async () => {
     setLoading(true);
-    const data = await fetchCadets();
+    const data = await fetchCadets(true);
     setCadets(data);
     setLoading(false);
   };

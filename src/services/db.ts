@@ -9,7 +9,7 @@ const handleSupabaseError = (error: any, context: string) => {
 // Users table was removed, auth is handled in auth.ts
 
 // Cadets
-export const fetchCadets = async (): Promise<Cadet[]> => {
+export const fetchCadets = async (includeStaff: boolean = false): Promise<Cadet[]> => {
   const { data, error } = await supabase
     .from('cadets')
     .select('*')
@@ -19,6 +19,10 @@ export const fetchCadets = async (): Promise<Cadet[]> => {
   if (error) {
     handleSupabaseError(error, 'fetchCadets');
     return [];
+  }
+  
+  if (includeStaff) {
+    return data as Cadet[];
   }
   
   // Filter out senior staff so they don't appear in cadet counts or tasks
