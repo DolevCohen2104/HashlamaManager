@@ -13,7 +13,8 @@ const COLUMNS = [
   { id: 'team_number', label: 'צוות' },
   { id: 'phone_number', label: 'טלפון' },
   { id: 'birth_date', label: 'תאריך לידה' },
-  { id: 'role', label: 'תפקיד בהשלמה' }
+  { id: 'role', label: 'תפקיד בהשלמה' },
+  { id: 'specific_role', label: 'תפקיד' }
 ] as const;
 
 export default function ExportData({ profile }: Props) {
@@ -21,7 +22,7 @@ export default function ExportData({ profile }: Props) {
   const [loading, setLoading] = useState(true);
   
   const [selectedColumns, setSelectedColumns] = useState<Set<string>>(new Set(COLUMNS.map(c => c.id)));
-  const [selectedTeam, setSelectedTeam] = useState<string>('all');
+  const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set(['all']));
 
   useEffect(() => {
     loadData();
@@ -44,10 +45,36 @@ export default function ExportData({ profile }: Props) {
     setSelectedColumns(next);
   };
 
+  const toggleGroup = (group: string) => {
+    if (group === 'all') {
+      setSelectedGroups(new Set(['all']));
+      return;
+    }
+    
+    const next = new Set(selectedGroups);
+    if (next.has('all')) {
+      next.delete('all');
+    }
+    
+    if (next.has(group)) {
+      next.delete(group);
+      if (next.size === 0) {
+        next.add('all');
+      }
+    } else {
+      next.add(group);
+    }
+    setSelectedGroups(next);
+  };
+
   const handleExport = () => {
-    const filteredCadets = selectedTeam === 'all' 
+    const filteredCadets = selectedGroups.has('all') 
       ? cadets 
-      : cadets.filter(c => c.team_number?.toString() === selectedTeam);
+      : cadets.filter(c => {
+          if (selectedGroups.has('staff') && c.role !== 'צוער') return true;
+          if (c.team_number && selectedGroups.has(c.team_number.toString())) return true;
+          return false;
+        });
 
     if (filteredCadets.length === 0) {
       alert('אין נתונים לייצוא');
@@ -112,19 +139,27 @@ export default function ExportData({ profile }: Props) {
           <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">1. בחירת אוכלוסייה</h3>
           <div className="flex flex-wrap gap-3">
             <button
-              onClick={() => setSelectedTeam('all')}
+              onClick={() => toggleGroup('all')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                selectedTeam === 'all' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                selectedGroups.has('all') ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
               כל ההשלמה
             </button>
+            <button
+              onClick={() => toggleGroup('staff')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                selectedGroups.has('staff') ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              סגל
+            </button>
             {['1','2','3','4','5','6','7','8'].map(team => (
               <button
                 key={team}
-                onClick={() => setSelectedTeam(team)}
+                onClick={() => toggleGroup(team)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  selectedTeam === team ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  selectedGroups.has(team) ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 צוות {team}
