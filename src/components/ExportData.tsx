@@ -13,8 +13,7 @@ const COLUMNS = [
   { id: 'team_number', label: 'צוות' },
   { id: 'phone_number', label: 'טלפון' },
   { id: 'birth_date', label: 'תאריך לידה' },
-  { id: 'role', label: 'תפקיד בהשלמה' },
-  { id: 'specific_role', label: 'תפקיד' }
+  { id: 'role', label: 'תפקיד בהשלמה' }
 ] as const;
 
 export default function ExportData({ profile }: Props) {
@@ -71,7 +70,7 @@ export default function ExportData({ profile }: Props) {
     const filteredCadets = selectedGroups.has('all') 
       ? cadets 
       : cadets.filter(c => {
-          if (selectedGroups.has('staff') && c.role !== 'צוער') return true;
+          if (selectedGroups.has('staff') && ['מפק"צ', 'סמק"ס', 'מק"ס'].includes(c.role)) return true;
           if (c.team_number && selectedGroups.has(c.team_number.toString())) return true;
           return false;
         });
