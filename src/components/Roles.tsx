@@ -55,13 +55,13 @@ export default function Roles() {
   // Split by hierarchy
   const maham = rolesCadets.filter(c => c.role.trim() === 'מה"מ');
   
-  const mammashim = rolesCadets.filter(c => c.role.trim() === 'ממ"ש').sort((a, b) => {
+  const mammashim = rolesCadets.filter(c => c.role.trim().includes('ממ"ש')).sort((a, b) => {
     const tA = parseInt(a.team_number) || 0;
     const tB = parseInt(b.team_number) || 0;
     return tA - tB;
   });
 
-  const otherRolesCadets = rolesCadets.filter(c => c.role.trim() !== 'מה"מ' && c.role.trim() !== 'ממ"ש');
+  const otherRolesCadets = rolesCadets.filter(c => c.role.trim() !== 'מה"מ' && !c.role.trim().includes('ממ"ש'));
 
   // Group other roles
   const groupedOtherRoles = otherRolesCadets.reduce((acc, cadet) => {
@@ -152,7 +152,7 @@ export default function Roles() {
                       {m.team_number}
                     </div>
                     <span className="font-bold text-slate-800 leading-tight text-sm mb-1">{m.full_name}</span>
-                    <span className="text-xs font-medium text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full mb-3">{formatRole('ממ"ש', m.gender)} צוות {m.team_number}</span>
+                    <span className="text-xs font-medium text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full mb-3">{formatRole(m.role, m.gender)} צוות {m.team_number}</span>
                     {m.phone_number && (
                       <a 
                         href={getWhatsAppLink(m.phone_number)}

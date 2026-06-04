@@ -101,7 +101,7 @@ export default function Dashboard({ profile }: Props) {
           setSelectedEventId(currentEvent.id);
           
           // Auto-expand the inner accordion lists
-          if (normalizedRole === 'ממ"ש') {
+          if (normalizedRole.includes('ממ"ש')) {
             setExpandedTeams(new Set([`mammash-${profile.team_number}`]));
           } else {
             // For Maham, maybe expand all or leave collapsed? Let's expand all
@@ -223,8 +223,8 @@ export default function Dashboard({ profile }: Props) {
     return () => clearInterval(intervalId);
   }, [selectedEventId]);
 
-  const isMammash = normalizedRole === 'ממ"ש';
-  const isStaff = ['מפק"צ', 'סמק"ס', 'מק"ס', 'ממ"ש', 'מה"מ'].includes(normalizedRole);
+  const isMammash = normalizedRole.includes('ממ"ש');
+  const isStaff = ['מפק"צ', 'סמק"ס', 'מק"ס', 'מה"מ'].includes(normalizedRole) || normalizedRole.includes('ממ"ש');
   const isCadet = !isStaff;
   const isMaham = normalizedRole === 'מה"מ';
   
@@ -781,7 +781,7 @@ export default function Dashboard({ profile }: Props) {
       })()}
 
       {/* Global Roll Call Banner for non-managers (Cadets, Mefaktzim, etc.) */}
-      {normalizedRole !== 'ממ"ש' && normalizedRole !== 'מה"מ' && hasActiveRollCalls && (
+      {!normalizedRole.includes('ממ"ש') && normalizedRole !== 'מה"מ' && hasActiveRollCalls && (
         <div className="mb-6 animate-fade-in">
           <RollCallManager profile={{...profile, role: normalizedRole}} cadets={cadets} />
         </div>
@@ -886,15 +886,15 @@ export default function Dashboard({ profile }: Props) {
       )}
 
       {(() => {
-        const hasTasksTab = normalizedRole === 'מה"מ' || (normalizedRole === 'ממ"ש' && tasksEnabled);
-        const hasMifkadTab = normalizedRole === 'מה"מ' || (normalizedRole === 'ממ"ש' && hasActiveRollCalls);
+        const hasTasksTab = normalizedRole === 'מה"מ' || (normalizedRole.includes('ממ"ש') && tasksEnabled);
+        const hasMifkadTab = normalizedRole === 'מה"מ' || (normalizedRole.includes('ממ"ש') && hasActiveRollCalls);
         const hasMultipleTabs = hasTasksTab || hasMifkadTab;
 
         if (!hasMultipleTabs) return null;
 
         return (
           <div className="fixed bottom-4 left-4 right-4 z-40 glass shadow-2xl border border-white/60 rounded-2xl flex items-center overflow-hidden">
-          {(normalizedRole === 'מה"מ' || (normalizedRole === 'ממ"ש' && tasksEnabled)) && (
+          {(normalizedRole === 'מה"מ' || (normalizedRole.includes('ממ"ש') && tasksEnabled)) && (
             <button 
               onClick={() => setActiveView('tasks')}
               className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'tasks' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}
@@ -908,7 +908,7 @@ export default function Dashboard({ profile }: Props) {
           >
             <CalendarIcon size={20} className={activeView === 'schedule' ? 'drop-shadow-sm' : ''} /> ניהול לו"ז ומצבות
           </button>
-          {(normalizedRole === 'מה"מ' || (normalizedRole === 'ממ"ש' && hasActiveRollCalls)) && (
+          {(normalizedRole === 'מה"מ' || (normalizedRole.includes('ממ"ש') && hasActiveRollCalls)) && (
             <button 
               onClick={() => setActiveView('mifkad')}
               className={`flex-1 py-3 px-1 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${activeView === 'mifkad' ? 'text-indigo-600 bg-indigo-50/80 scale-105 shadow-inner' : 'text-slate-500 hover:text-indigo-500 hover:bg-slate-50/50'}`}

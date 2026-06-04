@@ -22,7 +22,7 @@ export default function CadetDirectory({ profile }: Props) {
   const [teamFilter, setTeamFilter] = useState('all');
 
   const isMaham = profile.role === 'מה"מ';
-  const isMammash = profile.role === 'ממ"ש';
+  const isMammash = profile.role.includes('ממ"ש');
   // All users see all teams; mammash's own team is just highlighted
   const visibleTeams = ['1', '2', '3', '4', '5', '6', '7', '8'];
 

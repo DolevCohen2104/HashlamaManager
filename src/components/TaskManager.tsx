@@ -21,7 +21,7 @@ export default function TaskManager({ profile }: Props) {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const isStaff = profile.role !== 'צוער';
-  const isMammash = profile.role === 'ממ"ש';
+  const isMammash = profile.role.includes('ממ"ש');
   const myTeam = profile.team_number?.toString() || '';
 
   // Advanced new task form

@@ -22,7 +22,6 @@ export const formatRole = (role: string, gender?: 'זכר' | 'נקבה'): string
   // Exact matches
   const exactMatches: Record<string, string> = {
     'צוער': 'צוערת',
-    'ממ"ש': 'ממ"שית',
     'מה"מ': 'מה"מית',
     'קמב"צ': 'קמב"צית',
     'קל"ג': 'קל"גית',
@@ -42,6 +41,10 @@ export const formatRole = (role: string, gender?: 'זכר' | 'נקבה'): string
   let formatted = role;
   formatted = formatted.replace('קל"ג התנדבויות', 'קל"גית התנדבויות');
   formatted = formatted.replace('מפקדת האקתון', 'מפקדת האקתון'); // Already female
+  
+  if (formatted.includes('ממ"ש')) {
+    formatted = formatted.replace('ממ"ש', 'ממ"שית');
+  }
   
   // If it starts with "א' " (Achrai) -> "אחראית"
   if (formatted.startsWith("א' ")) {
