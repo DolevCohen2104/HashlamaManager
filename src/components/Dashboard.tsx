@@ -31,6 +31,7 @@ export default function Dashboard({ profile }: Props) {
   const [mahamEditMode, setMahamEditMode] = useState(false);
   const [editingTeam, setEditingTeam] = useState<string | null>(null);
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
+  const [excludedTeams, setExcludedTeams] = useState<Set<string>>(new Set());
   // Debounce timers for absence reason auto-save
   const debounceTimers = React.useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
@@ -110,8 +111,16 @@ export default function Dashboard({ profile }: Props) {
 
           setAttendanceLoading(true);
           try {
-            const logs = await fetchAttendanceForEvent(currentEvent.id);
+            const [logs, excluded] = await Promise.all([
+              fetchAttendanceForEvent(currentEvent.id),
+              fetchSystemSetting(`excluded_teams_${currentEvent.id}`)
+            ]);
             setAttendance(logs);
+            if (excluded && Array.isArray(excluded)) {
+              setExcludedTeams(new Set(excluded));
+            } else {
+              setExcludedTeams(new Set());
+            }
           } catch (err) {
             console.error(err);
           } finally {
@@ -142,8 +151,16 @@ export default function Dashboard({ profile }: Props) {
     setAttendance([]); // clear stale data immediately
     setAttendanceLoading(true);
     try {
-      const logs = await fetchAttendanceForEvent(eventId);
+      const [logs, excluded] = await Promise.all([
+        fetchAttendanceForEvent(eventId),
+        fetchSystemSetting(`excluded_teams_${eventId}`)
+      ]);
       setAttendance(logs);
+      if (excluded && Array.isArray(excluded)) {
+        setExcludedTeams(new Set(excluded));
+      } else {
+        setExcludedTeams(new Set());
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -220,12 +237,14 @@ export default function Dashboard({ profile }: Props) {
   const renderMahamSummary = (eventId: string) => {
     if (selectedEventId !== eventId) return null;
     const teams = ['1', '2', '3', '4', '5', '6', '7', '8'];
+    const activeTeams = teams.filter(t => !excludedTeams.has(t));
 
-    // Total across all teams
-    const allLogs = attendance;
-    const totalPresent = allLogs.filter(log => log.status === true || log.status as any === 't').length;
-    const totalCadets = cadets.length;
-    const totalAbsent = allLogs.filter(log => log.status === false || log.status as any === 'f').length;
+    // Total across all active teams
+    const activeCadets = cadets.filter(c => activeTeams.includes(c.team_number?.toString() || ''));
+    const totalCadets = activeCadets.length;
+    const activeLogs = attendance.filter(log => activeCadets.some(c => c.cadet_id === log.cadet_id));
+    const totalPresent = activeLogs.filter(log => log.status === true || log.status as any === 't').length;
+    const totalAbsent = activeLogs.filter(log => log.status === false || log.status as any === 'f').length;
 
     if (attendanceLoading) {
       return (
@@ -255,6 +274,9 @@ export default function Dashboard({ profile }: Props) {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 animate-slide-down">
           {teams.map(team => {
+            const isExcluded = excludedTeams.has(team);
+            if (!mahamEditMode && isExcluded) return null; // Hide in view mode
+            
             const teamCadets = cadets.filter(c => c.team_number?.toString() === team);
             if (teamCadets.length === 0) return null;
             const teamLogs = attendance.filter(log => teamCadets.some(c => c.cadet_id === log.cadet_id));
@@ -263,29 +285,62 @@ export default function Dashboard({ profile }: Props) {
             const absentLogs = teamLogs.filter(log => log.status === false || log.status as any === 'f');
             const absentCount = absentLogs.length;
             const unmarkedCount = teamCadets.length - teamLogs.length;
+            
+            const toggleExclusion = async (e: React.MouseEvent) => {
+              e.stopPropagation();
+              const next = new Set(excludedTeams);
+              if (isExcluded) next.delete(team);
+              else next.add(team);
+              setExcludedTeams(next);
+              await updateSystemSetting(`excluded_teams_${eventId}`, Array.from(next));
+            };
+            
             return (
               <div 
                 key={team} 
-                onClick={() => mahamEditMode && setEditingTeam(team)}
-                className={`p-3 rounded-xl border flex flex-col justify-center ${
-                  mahamEditMode ? 'cursor-pointer hover:border-sky-400 shadow-sm hover:shadow-md transition-all' : 'shadow-sm'
+                onClick={() => {
+                  if (mahamEditMode && !isExcluded) setEditingTeam(team);
+                }}
+                className={`relative p-3 rounded-xl border flex flex-col justify-center ${
+                  mahamEditMode && !isExcluded ? 'cursor-pointer hover:border-sky-400 shadow-sm hover:shadow-md transition-all' : 'shadow-sm'
                 } ${
+                  isExcluded ? 'border-slate-200 bg-slate-100 opacity-60 grayscale' :
                   absentCount > 0 ? 'border-red-200 bg-red-50/50' :
                   presentCount === teamCadets.length ? 'border-emerald-200 bg-emerald-50/50' :
                   'border-slate-200 bg-white'
                 }`}>
+                
+                {mahamEditMode && (
+                  <button
+                    onClick={toggleExclusion}
+                    className={`absolute top-2 left-2 p-1.5 rounded-lg z-10 transition-colors ${
+                      isExcluded ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-red-100 text-red-700 hover:bg-red-200'
+                    }`}
+                    title={isExcluded ? 'החזר צוות למצבה' : 'הסר צוות מהמצבה'}
+                  >
+                    {isExcluded ? <CheckCircle size={16} /> : <XCircle size={16} />}
+                  </button>
+                )}
+                
                 <div className="flex justify-between items-center mb-1.5">
-                  <span className="font-bold text-slate-800 text-sm">צוות {team}</span>
-                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${
-                    presentCount === teamCadets.length ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
-                  }`}>
-                    {presentCount}/{teamCadets.length}
-                  </span>
+                  <span className={`font-bold text-slate-800 text-sm ${isExcluded ? 'line-through' : ''}`}>צוות {team}</span>
+                  {!isExcluded && (
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${
+                      presentCount === teamCadets.length ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {presentCount}/{teamCadets.length}
+                    </span>
+                  )}
+                  {isExcluded && (
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-md bg-slate-200 text-slate-500">
+                      הוסר
+                    </span>
+                  )}
                 </div>
-                {unmarkedCount > 0 && (
+                {!isExcluded && unmarkedCount > 0 && (
                   <p className="text-[11px] font-semibold text-amber-600 bg-amber-50 rounded px-1.5 py-0.5 self-start mt-0.5">{unmarkedCount} ללא דיווח</p>
                 )}
-                {absentCount > 0 && (
+                {!isExcluded && absentCount > 0 && (
                   <div className="mt-1.5 text-[11px] border-t border-red-100 pt-1.5">
                     <span className="text-red-600 font-semibold">{absentCount} נעדרים:</span>
                     <ul className="mt-1 space-y-1">
