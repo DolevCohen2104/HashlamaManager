@@ -310,32 +310,33 @@ export default function Dashboard({ profile }: Props) {
                   'border-slate-200 bg-white'
                 }`}>
                 
-                {mahamEditMode && (
-                  <button
-                    onClick={toggleExclusion}
-                    className={`absolute top-2 left-2 p-1.5 rounded-lg z-10 transition-colors ${
-                      isExcluded ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-red-100 text-red-700 hover:bg-red-200'
-                    }`}
-                    title={isExcluded ? 'החזר צוות למצבה' : 'הסר צוות מהמצבה'}
-                  >
-                    {isExcluded ? <CheckCircle size={16} /> : <XCircle size={16} />}
-                  </button>
-                )}
-                
                 <div className="flex justify-between items-center mb-1.5">
                   <span className={`font-bold text-slate-800 text-sm ${isExcluded ? 'line-through' : ''}`}>צוות {team}</span>
-                  {!isExcluded && (
-                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${
-                      presentCount === teamCadets.length ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {presentCount}/{teamCadets.length}
-                    </span>
-                  )}
-                  {isExcluded && (
-                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-md bg-slate-200 text-slate-500">
-                      הוסר
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {mahamEditMode && (
+                      <button
+                        onClick={toggleExclusion}
+                        className={`p-1 rounded-md transition-colors ${
+                          isExcluded ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-red-100 text-red-700 hover:bg-red-200'
+                        }`}
+                        title={isExcluded ? 'החזר צוות למצבה' : 'הסר צוות מהמצבה'}
+                      >
+                        {isExcluded ? <CheckCircle size={15} /> : <XCircle size={15} />}
+                      </button>
+                    )}
+                    {!isExcluded && (
+                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${
+                        presentCount === teamCadets.length ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        {presentCount}/{teamCadets.length}
+                      </span>
+                    )}
+                    {isExcluded && (
+                      <span className="text-xs font-bold px-1.5 py-0.5 rounded-md bg-slate-200 text-slate-500">
+                        הוסר
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {!isExcluded && unmarkedCount > 0 && (
                   <p className="text-[11px] font-semibold text-amber-600 bg-amber-50 rounded px-1.5 py-0.5 self-start mt-0.5">{unmarkedCount} ללא דיווח</p>
