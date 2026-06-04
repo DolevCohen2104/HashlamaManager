@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchCadets } from '../services/db';
 import type { Cadet } from '../types';
 import { Network, Loader2, AlertCircle, Briefcase, Users, Star, Search, MessageCircle } from 'lucide-react';
-import { getWhatsAppLink, formatRole } from '../utils';
+import { getWhatsAppLink, formatRole, isMammashRole } from '../utils';
 import LoadingSpinner from './LoadingSpinner';
 
 export default function Roles() {
@@ -55,13 +55,13 @@ export default function Roles() {
   // Split by hierarchy
   const maham = rolesCadets.filter(c => c.role.trim() === 'מה"מ');
   
-  const mammashim = rolesCadets.filter(c => c.role.trim().includes('ממ"ש')).sort((a, b) => {
+  const mammashim = rolesCadets.filter(c => isMammashRole(c.role)).sort((a, b) => {
     const tA = parseInt(a.team_number) || 0;
     const tB = parseInt(b.team_number) || 0;
     return tA - tB;
   });
 
-  const otherRolesCadets = rolesCadets.filter(c => c.role.trim() !== 'מה"מ' && !c.role.trim().includes('ממ"ש'));
+  const otherRolesCadets = rolesCadets.filter(c => c.role.trim() !== 'מה"מ' && !isMammashRole(c.role));
 
   // Group other roles
   const groupedOtherRoles = otherRolesCadets.reduce((acc, cadet) => {

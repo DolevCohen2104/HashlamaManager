@@ -70,7 +70,7 @@ export default function App() {
         <div className="bg-slate-800/50 backdrop-blur-md border border-white/5 p-4 rounded-2xl text-center text-sm shadow-inner mt-8">
            <p className="opacity-60 mb-1">משתמש נוכחי:</p>
            <p className="font-semibold text-sky-100">{profile.full_name}</p>
-           <p className="text-xs text-slate-400">({profile.role.includes('ממ"ש') && profile.team_number ? `${formatRole(profile.role, profile.gender)} צוות ${profile.team_number}` : formatRole(profile.role, profile.gender)})</p>
+           <p className="text-xs text-slate-400">({isMammashRole(profile.role) && profile.team_number ? `${formatRole(profile.role, profile.gender)} צוות ${profile.team_number}` : formatRole(profile.role, profile.gender)})</p>
            <button onClick={handleLogout} className="mt-4 flex items-center justify-center gap-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 p-2 rounded-xl w-full transition-all font-medium">
               <LogOut size={16} /> התנתק
            </button>

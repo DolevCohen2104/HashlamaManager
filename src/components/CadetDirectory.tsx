@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Phone, Calendar, UserCheck, Plus, Trash2, ChevronDown, ChevronLeft, Search, Filter, MessageCircle, Loader2 } from 'lucide-react';
 import type { UserProfile, Cadet } from '../types';
 import { fetchCadets, addCadet, deleteCadet } from '../services/db';
-import { getWhatsAppLink, formatRole } from '../utils';
+import { getWhatsAppLink, formatRole, isMammashRole } from '../utils';
 import LoadingSpinner from './LoadingSpinner';
 
 interface Props {
@@ -22,7 +22,7 @@ export default function CadetDirectory({ profile }: Props) {
   const [teamFilter, setTeamFilter] = useState('all');
 
   const isMaham = profile.role === 'מה"מ';
-  const isMammash = profile.role.includes('ממ"ש');
+  const isMammash = isMammashRole(profile.role);
   // All users see all teams; mammash's own team is just highlighted
   const visibleTeams = ['1', '2', '3', '4', '5', '6', '7', '8'];
 

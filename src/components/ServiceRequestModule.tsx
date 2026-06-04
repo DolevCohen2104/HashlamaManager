@@ -5,6 +5,7 @@ import ServiceRequestForm from './ServiceRequestForm';
 import LeaveRequestForm from './LeaveRequestForm';
 import ServiceRequestsManager from './ServiceRequestsManager';
 import { PenTool, CalendarOff, Cross, ArrowRight, FilePlus, LayoutList } from 'lucide-react';
+import { isMammashRole } from '../utils';
 
 interface Props {
   profile: UserProfile;
@@ -14,7 +15,7 @@ interface Props {
 
 const TYPE_CONFIG = {
   maintenance: { title: 'תקלות בינוי ותשתיות', icon: PenTool, color: 'text-orange-500', bg: 'bg-orange-50', isManager: (p: UserProfile) => p.role === 'מה"מ' || p.specific_role === 'קל"ג' },
-  leave: { title: 'בקשות יציאה', icon: CalendarOff, color: 'text-indigo-500', bg: 'bg-indigo-50', isManager: (p: UserProfile) => p.role === 'מה"מ' || p.role.includes('ממ"ש') || p.role === 'מפק"צ' },
+  leave: { title: 'בקשות יציאה', icon: CalendarOff, color: 'text-indigo-500', bg: 'bg-indigo-50', isManager: (p: UserProfile) => p.role === 'מה"מ' || isMammashRole(p.role) || p.role === 'מפק"צ' },
   clinic: { title: 'בקשות חופ"ל / רופא', icon: Cross, color: 'text-rose-500', bg: 'bg-rose-50', isManager: (p: UserProfile) => p.role === 'מה"מ' || p.specific_role === 'קמב"צ' }
 };
 
@@ -64,7 +65,7 @@ export default function ServiceRequestModule({ profile, type, onClose }: Props) 
             filterType={type} 
             isManager={isManager}
             isViewer={isViewer}
-            teamFilter={(profile.role === 'מפק"צ' || (type === 'leave' && profile.role.includes('ממ"ש'))) ? profile.team_number : 'all'}
+            teamFilter={(profile.role === 'מפק"צ' || (type === 'leave' && isMammashRole(profile.role))) ? profile.team_number : 'all'}
           />
         )}
       </div>

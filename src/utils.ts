@@ -15,6 +15,12 @@ export const getWhatsAppLink = (phoneNumber: string): string => {
   return `https://wa.me/${cleanNumber}`;
 };
 
+export const isMammashRole = (role?: string): boolean => {
+  if (!role) return false;
+  // Remove all quotes/ticks to catch variations like ממ"ש, ממ״ש, מ"מש, ממש
+  return role.replace(/["'״]/g, '').includes('ממש');
+};
+
 export const formatRole = (role: string, gender?: 'זכר' | 'נקבה'): string => {
   if (!role) return '';
   if (gender !== 'נקבה') return role;
@@ -42,8 +48,10 @@ export const formatRole = (role: string, gender?: 'זכר' | 'נקבה'): string
   formatted = formatted.replace('קל"ג התנדבויות', 'קל"גית התנדבויות');
   formatted = formatted.replace('מפקדת האקתון', 'מפקדת האקתון'); // Already female
   
-  if (formatted.includes('ממ"ש')) {
-    formatted = formatted.replace('ממ"ש', 'ממ"שית');
+  if (isMammashRole(formatted)) {
+    // If it contains some variation of Mammash, we can blindly replace "ממ\"ש" if it exists,
+    // or just the clean version. For display, we replace ממ"ש if typed exactly.
+    formatted = formatted.replace('ממ"ש', 'ממ"שית').replace('ממש', 'ממ"שית');
   }
   
   // If it starts with "א' " (Achrai) -> "אחראית"

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CheckCircle, Circle, Plus, Trash2, CalendarClock, ExternalLink, Link2, ListTodo, FileText, BookOpen, RotateCcw, Users, Activity, CheckSquare } from 'lucide-react';
 import type { Task, TaskCompletion, UserProfile, Cadet } from '../types';
 import { fetchTasks, fetchTaskCompletions, completeTask, uncompleteTask, createTask, fetchCadets, deleteTask } from '../services/db';
+import { isMammashRole } from '../utils';
 import LoadingSpinner from './LoadingSpinner';
 
 interface Props {
@@ -21,7 +22,7 @@ export default function TaskManager({ profile }: Props) {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const isStaff = profile.role !== 'צוער';
-  const isMammash = profile.role.includes('ממ"ש');
+  const isMammash = isMammashRole(profile.role);
   const myTeam = profile.team_number?.toString() || '';
 
   // Advanced new task form
