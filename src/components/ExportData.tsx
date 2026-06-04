@@ -67,13 +67,19 @@ export default function ExportData({ profile }: Props) {
   };
 
   const handleExport = () => {
-    const filteredCadets = selectedGroups.has('all') 
-      ? cadets 
-      : cadets.filter(c => {
-          if (selectedGroups.has('staff') && ['מפק"צ', 'סמק"ס', 'מק"ס'].includes(c.role)) return true;
-          if (c.team_number && selectedGroups.has(c.team_number.toString())) return true;
-          return false;
-        });
+    const filteredCadets = cadets.filter(c => {
+      const isStaff = ['מפק"צ', 'סמק"ס', 'מק"ס'].includes(c.role);
+      
+      if (selectedGroups.has('all')) {
+        return !isStaff;
+      }
+      
+      if (isStaff) {
+        return selectedGroups.has('staff');
+      }
+      
+      return c.team_number && selectedGroups.has(c.team_number.toString());
+    });
 
     if (filteredCadets.length === 0) {
       alert('אין נתונים לייצוא');
