@@ -11,7 +11,7 @@ import Roles from './components/Roles';
 import OmniSearch from './components/OmniSearch';
 import ServiceRequestModule from './components/ServiceRequestModule';
 import LoadingSpinner from './components/LoadingSpinner';
-import { formatRole } from './utils';
+import { formatRole, isMammashRole } from './utils';
 
 export default function App() {
   const [profile, setProfile] = useState<AppUser | null>(null);
